@@ -1,4 +1,5 @@
 local LocationLookup = require("soullink.location_lookup")
+local SoulLinkReader = require("soullink.reader")
 
 local SoulLinkState = {}
 SoulLinkState.__index = SoulLinkState
@@ -14,17 +15,6 @@ local function shallowCopy(tbl)
     return copy
 end
 
-local function buildTypes(pokemon)
-    local types = {}
-    if pokemon.type1Name and pokemon.type1Name ~= "Unknown" then
-        table.insert(types, pokemon.type1Name)
-    end
-    if pokemon.type2Name and pokemon.type2Name ~= "Unknown" and pokemon.type2Name ~= pokemon.type1Name then
-        table.insert(types, pokemon.type2Name)
-    end
-    return types
-end
-
 function SoulLinkState:new(opts)
     local obj = {
         frameCount = 0,
@@ -37,28 +27,10 @@ function SoulLinkState:new(opts)
         routeIndex = {},
         recentEvents = {},
         nextEventId = 1,
+        reader = SoulLinkReader:new(),
     }
     setmetatable(obj, SoulLinkState)
     return obj
-end
-
-function SoulLinkState:normalizePokemon(pokemon)
-    return {
-        personality = pokemon.personality,
-        speciesId = pokemon.speciesID,
-        species = pokemon.speciesName,
-        nickname = pokemon.nickname,
-        level = pokemon.level,
-        currentHP = pokemon.curHP,
-        maxHP = pokemon.maxHP,
-        isShiny = pokemon.isShiny or false,
-        metLocation = pokemon.metLocation,
-        metLocationName = LocationLookup.getName(pokemon.metLocation),
-        metLevel = pokemon.metLevel,
-        heldItem = pokemon.heldItem,
-        heldItemId = pokemon.heldItemId,
-        types = buildTypes(pokemon),
-    }
 end
 
 function SoulLinkState:trackPokemon(pokemon, firstSeenFrame)
@@ -132,18 +104,10 @@ function SoulLinkState:classifyNewPokemon(pokemon)
 end
 
 function SoulLinkState:buildSnapshot(memoryReader)
-    local rawParty = memoryReader.getPartyData() or {}
-    local snapshot = {}
-
-    for i = 1, 6 do
-        local pokemon = rawParty[i]
-        if pokemon and pokemon.speciesID and pokemon.speciesID > 0 and pokemon.personality and pokemon.personality > 0 then
-            local normalized = self:normalizePokemon(pokemon)
-            normalized.slot = i
-            snapshot[normalized.personality] = normalized
-        end
+    local snapshot = self.reader:readParty(memoryReader)
+    for _, pokemon in pairs(snapshot) do
+        pokemon.metLocationName = LocationLookup.getName(pokemon.metLocation)
     end
-
     return snapshot
 end
 
@@ -180,8 +144,6 @@ function SoulLinkState:applySnapshot(snapshot)
             tracked.metLocation = pokemon.metLocation
             tracked.metLocationName = pokemon.metLocationName
             tracked.metLevel = pokemon.metLevel
-            tracked.heldItem = pokemon.heldItem
-            tracked.heldItemId = pokemon.heldItemId
             tracked.isShiny = pokemon.isShiny
             tracked.types = shallowCopy(pokemon.types)
         end
@@ -202,6 +164,32 @@ function SoulLinkState:applySnapshot(snapshot)
     for personality, pokemon in pairs(snapshot) do
         self.currentParty[personality] = shallowCopy(pokemon)
     end
+end
+
+function SoulLinkState:reset()
+    self.frameCount = 0
+    self.baselineEstablished = false
+    self.currentParty = {}
+    self.trackedPokemon = {}
+    self.routeOrder = {}
+    self.routeIndex = {}
+    self.recentEvents = {}
+    self.nextEventId = 1
+end
+
+function SoulLinkState:rebase(memoryReader)
+    self:reset()
+    local snapshot = self:buildSnapshot(memoryReader)
+    self:establishBaseline(snapshot)
+end
+
+function SoulLinkState:setPollInterval(frames)
+    local value = tonumber(frames)
+    if not value or value < 1 then
+        return false
+    end
+    self.pollInterval = math.floor(value)
+    return true
 end
 
 function SoulLinkState:update(memoryReader)
@@ -282,6 +270,7 @@ function SoulLinkState:getState()
             currentPartyCount = #self:getCurrentParty(),
             routeCount = #self.routeOrder,
             eventCount = #self.recentEvents,
+            pollInterval = self.pollInterval,
         },
         currentParty = self:getCurrentParty(),
         routes = self:getRoutes(),

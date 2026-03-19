@@ -20,6 +20,9 @@ function UserCommands.help()
   console.log("=== Pokemon Memory Reader Commands ===")
   console.log("showParty() - Displays the current party information.")
   console.log("showSoulLink() - Displays the current local Soul Link state.")
+  console.log("resetSoulLink() - Clears Soul Link state and pending events.")
+  console.log("rebaseSoulLink() - Rebuilds Soul Link baseline from the current party.")
+  console.log("setSoulLinkPollInterval(frames) - Sets the Soul Link polling interval in frames.")
   console.log("startServer() - Starts the memory reading server.")
   console.log("stopServer() - Stops the memory reading server.")
   console.log("toggleServer() - Toggles the memory reading server.")
@@ -104,6 +107,42 @@ function UserCommands.showSoulLink()
 
   local json = require("modules.dkjson")
   console.log(json.encode(MemoryReader.soulLink:getState(), {indent = true}))
+end
+
+function UserCommands.resetSoulLink()
+  if not ensureInitialized() then return end
+  if not MemoryReader.soulLink then
+    console.log("Soul Link state is not available.")
+    return
+  end
+
+  MemoryReader.soulLink:reset()
+  console.log("Soul Link state reset.")
+end
+
+function UserCommands.rebaseSoulLink()
+  if not ensureInitialized() then return end
+  if not MemoryReader.soulLink then
+    console.log("Soul Link state is not available.")
+    return
+  end
+
+  MemoryReader.soulLink:rebase(MemoryReader)
+  console.log("Soul Link baseline rebuilt from the current party.")
+end
+
+function UserCommands.setSoulLinkPollInterval(frames)
+  if not ensureInitialized() then return end
+  if not MemoryReader.soulLink then
+    console.log("Soul Link state is not available.")
+    return
+  end
+
+  if MemoryReader.soulLink:setPollInterval(frames) then
+    console.log("Soul Link poll interval set to " .. tostring(math.floor(tonumber(frames))) .. " frames.")
+  else
+    console.log("Invalid poll interval. Use a positive integer.")
+  end
 end
 
 -- Sets the player's money to the specified amount.

@@ -6,6 +6,8 @@ local gameUtils = require("utils.gameutils")
 local constants = require("data.constants")
 local charmaps = require("data.charmaps")
 
+local warnedMissingAbilityNameTable = {}
+
 -- Read species name from ROM
 function pokemonData.readSpeciesName(speciesId)
     -- Get game data
@@ -158,7 +160,11 @@ function pokemonData.getAbilityName(abilityId)
 
     local abilityNameTableAddr = gameData.addresses.abilityNameTable
     if not abilityNameTableAddr then
-        console.log("No ability name table address for game. Falling back to constants.")
+        local gameKey = gameData.gameInfo and gameData.gameInfo.gameName or "unknown"
+        if not warnedMissingAbilityNameTable[gameKey] then
+            console.log("No ability name table address for game. Falling back to constants.")
+            warnedMissingAbilityNameTable[gameKey] = true
+        end
         if abilityId >= 0 and abilityId < #constants.pokemonData.ability then
             return constants.pokemonData.ability[abilityId + 1]
         end
