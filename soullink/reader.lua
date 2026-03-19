@@ -24,7 +24,15 @@ function SoulLinkReader:getSpeciesName(speciesId)
         return "Unknown"
     end
     if not self.speciesNameCache[speciesId] then
-        self.speciesNameCache[speciesId] = pokemonData.readSpeciesName(speciesId)
+        local gameData = MemoryReader.currentGame
+        if gameData and gameData.gameInfo and gameData.gameInfo.generation == "CFRU" then
+            local speciesNameTableAddr = gameUtils.hexToNumber(gameData.addresses.speciesNameTable)
+            local pointer = speciesNameTableAddr + ((speciesId - 1) * 11)
+            local bytes = gameUtils.readBytesCFRU(pointer, 11)
+            self.speciesNameCache[speciesId] = charmaps.decryptText(bytes)
+        else
+            self.speciesNameCache[speciesId] = pokemonData.readSpeciesName(speciesId)
+        end
     end
     return self.speciesNameCache[speciesId]
 end
@@ -37,7 +45,19 @@ function SoulLinkReader:getSpeciesMeta(speciesId)
     if not self.speciesMetaCache[speciesId] then
         local species = self:getSpeciesName(speciesId)
         local types = {}
-        local speciesData = pokemonData.readSpeciesData(speciesId)
+        local speciesData
+        local gameData = MemoryReader.currentGame
+        if gameData and gameData.gameInfo and gameData.gameInfo.generation == "CFRU" then
+            local speciesDataTableAddr = gameUtils.hexToNumber(gameData.addresses.speciesDataTable)
+            local speciesAddr = speciesDataTableAddr + ((speciesId - 1) * 28)
+            local bytes = gameUtils.readBytesCFRU(speciesAddr, 28)
+            speciesData = {
+                type1 = bytes[7],
+                type2 = bytes[8],
+            }
+        else
+            speciesData = pokemonData.readSpeciesData(speciesId)
+        end
         if speciesData then
             local type1Name = pokemonData.getTypeName(speciesData.type1)
             local type2Name = pokemonData.getTypeName(speciesData.type2)
