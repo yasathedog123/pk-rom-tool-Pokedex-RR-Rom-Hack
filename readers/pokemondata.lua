@@ -257,7 +257,12 @@ function pokemonData.getMoveName(moveId)
     -- Moves are 13 bytes each
     if gameData and movesTableAddr then
         local moveNameAddr = movesTableAddr + (moveId * 13)
-        local nameBytes = gameUtils.readBytes(moveNameAddr, 12, "ROM")
+        local nameBytes
+        if gameData.gameInfo.generation == "CFRU" then
+            nameBytes = gameUtils.readBytesCFRU(moveNameAddr, 12)
+        else
+            nameBytes = gameUtils.readBytes(moveNameAddr, 12, "ROM")
+        end
         return charmaps.decryptText(nameBytes)
     end
 

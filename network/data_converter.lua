@@ -59,6 +59,7 @@ function DataConverter.getPartyData(memoryReader)
                 nickname = pokemon.nickname or pokemon.speciesName,
                 species = pokemon.speciesName,
                 speciesId = pokemon.speciesID,
+                personality = pokemon.personality,
                 level = pokemon.level,
                 nature = pokemon.natureName,
                 currentHP = pokemon.curHP,
@@ -88,6 +89,8 @@ function DataConverter.getPartyData(memoryReader)
                 abilityIndex = pokemon.ability,
                 abilityId = pokemon.abilityID,
                 ability = pokemon.abilityName,
+                metLocation = pokemon.metLocation,
+                metLevel = pokemon.metLevel,
                 hiddenPower = pokemon.hiddenPowerName,
                 isShiny = pokemon.isShiny or false,
                 types = types
