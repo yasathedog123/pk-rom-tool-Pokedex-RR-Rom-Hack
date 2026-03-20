@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import StatusBar from './components/StatusBar';
 import SettingsModal from './components/SettingsModal';
 import PartyGrid from './components/PartyGrid';
@@ -189,9 +189,26 @@ export default function App() {
   }));
 
   const mockPlayerCount = getMockPlayerCount();
-  const mockData = useMemo(() => {
-    if (mockPlayerCount === 0) return null;
-    const localPlayer = {
+  const mockDataRef = useRef(null);
+  if (mockPlayerCount > 0 && !mockDataRef.current) {
+    mockDataRef.current = generateMockData({
+      name: resolvedTrainerName,
+      playerId: localPlayerId,
+      party: [],
+      spriteUrl: trainerSpriteUrl,
+      money: 0,
+      coins: 0,
+    });
+  }
+  const mockData = mockDataRef.current;
+
+  const isMockMode = mockData !== null;
+  const isSolo = !isRoom && !isMockMode;
+  const isMulti = (isRoom && trainerParties.length > 1) || isMockMode;
+
+  let finalTrainerParties, finalRoomLinks, finalRoomPlayers, finalRoomEvents, finalRouteMap;
+  if (isMockMode) {
+    const localEntry = {
       name: resolvedTrainerName,
       playerId: localPlayerId,
       party: enrichedLocalParty,
@@ -199,18 +216,18 @@ export default function App() {
       money: trainerInfo?.money,
       coins: trainerInfo?.coins,
     };
-    return generateMockData(localPlayer);
-  }, [mockPlayerCount, resolvedTrainerName, localPlayerId, enrichedLocalParty, trainerSpriteUrl, trainerInfo?.money, trainerInfo?.coins]);
-
-  const isMockMode = mockData !== null;
-  const isSolo = !isRoom && !isMockMode;
-  const isMulti = (isRoom && trainerParties.length > 1) || isMockMode;
-
-  const finalTrainerParties = isMockMode ? mockData.trainerParties : trainerParties;
-  const finalRoomLinks = isMockMode ? mockData.roomLinks : roomLinks;
-  const finalRoomPlayers = isMockMode ? mockData.roomPlayers : roomPlayers;
-  const finalRoomEvents = isMockMode ? mockData.roomEvents : roomEvents;
-  const finalRouteMap = isMockMode ? buildRoomRouteMap(mockData.roomPairs) : roomRouteMap;
+    finalTrainerParties = [localEntry, ...mockData.trainerParties.slice(1)];
+    finalRoomLinks = mockData.roomLinks;
+    finalRoomPlayers = mockData.roomPlayers;
+    finalRoomEvents = mockData.roomEvents;
+    finalRouteMap = buildRoomRouteMap(mockData.roomPairs);
+  } else {
+    finalTrainerParties = trainerParties;
+    finalRoomLinks = roomLinks;
+    finalRoomPlayers = roomPlayers;
+    finalRoomEvents = roomEvents;
+    finalRouteMap = roomRouteMap;
+  }
 
   function handleSoloAssign(routeId, personality) {
     const next = { ...soloAssignments, [String(routeId)]: personality };
