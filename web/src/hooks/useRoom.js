@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import {
   getPlayerId, createRoom as apiCreateRoom, joinRoom as apiJoinRoom,
-  fetchRoomState, sendReconcile,
+  fetchRoomState, sendReconcile, overrideDeath,
 } from '../utils/api';
 
 function buildProfile(status) {
@@ -61,7 +61,7 @@ function mapEvent(ev, playerId, playerName) {
   };
 }
 
-export default function useRoom(syncUrl, playerName, localStatus, localSoul) {
+export default function useRoom(syncUrl, playerName, localStatus, localSoul, localParty) {
   const [roomCode, setRoomCode]       = useState('');
   const [roomState, setRoomState]     = useState(null);
   const [syncConnected, setSyncConn]  = useState(false);
@@ -96,8 +96,12 @@ export default function useRoom(syncUrl, playerName, localStatus, localSoul) {
 
   const syncOnce = useCallback(async (code) => {
     if (!code || !syncUrl || !localSoul) return;
+    const detailsByPersonality = new Map((localParty || []).map(mon => [mon.personality, mon]));
     const newEvents = (localSoul.recentEvents || [])
-      .map(ev => mapEvent(ev, playerId, playerName))
+      .map(ev => {
+        const details = detailsByPersonality.get(ev.personality) || {};
+        return mapEvent({ ...ev, ...details }, playerId, playerName);
+      })
       .filter(ev => !sentIds.current.has(ev.id));
 
     try {
@@ -105,13 +109,24 @@ export default function useRoom(syncUrl, playerName, localStatus, localSoul) {
         player_id: playerId,
         player_name: playerName,
         timestamp: Math.floor(Date.now() / 1000),
-        current_party: (localSoul.currentParty || []).map(mapSyncMon),
+        current_party: (localSoul.currentParty || []).map(mon => ({
+          ...mapSyncMon(mon),
+          ...(detailsByPersonality.get(mon.personality) ? {
+            nature: detailsByPersonality.get(mon.personality).nature || '',
+            ivs: detailsByPersonality.get(mon.personality).IVs || {},
+            evs: detailsByPersonality.get(mon.personality).EVs || {},
+            held_item: detailsByPersonality.get(mon.personality).heldItem || '',
+            held_item_id: detailsByPersonality.get(mon.personality).heldItemId || 0,
+            hidden_power: detailsByPersonality.get(mon.personality).hiddenPower || '',
+            friendship: detailsByPersonality.get(mon.personality).friendship || 0,
+          } : {}),
+        })),
         recent_events: newEvents,
       });
       newEvents.forEach(ev => sentIds.current.add(ev.id));
       await refreshRoom(code);
     } catch { /* will retry next cycle */ }
-  }, [syncUrl, localSoul, playerId, playerName, refreshRoom]);
+  }, [syncUrl, localSoul, localParty, playerId, playerName, refreshRoom]);
 
   const create = useCallback(async () => {
     if (!localStatus?.game?.initialized) { setError('Local game not detected.'); return; }
@@ -160,6 +175,16 @@ export default function useRoom(syncUrl, playerName, localStatus, localSoul) {
     if (syncTimer.current) clearInterval(syncTimer.current);
   }, []);
 
+  const undoDeath = useCallback(async (route) => {
+    if (!roomCode) return;
+    try {
+      await overrideDeath(syncUrl, roomCode, route, true);
+      await refreshRoom(roomCode);
+    } catch (e) {
+      setError(e.message);
+    }
+  }, [syncUrl, roomCode, refreshRoom]);
+
   useEffect(() => {
     return () => {
       if (wsRef.current) wsRef.current.close();
@@ -169,6 +194,6 @@ export default function useRoom(syncUrl, playerName, localStatus, localSoul) {
 
   return {
     roomCode, setRoomCode, roomState, syncConnected,
-    error, mode, create, join, goSolo,
+    error, mode, create, join, goSolo, undoDeath,
   };
 }

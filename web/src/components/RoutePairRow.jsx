@@ -1,6 +1,6 @@
 import PokemonCard from './PokemonCard';
 
-export default function RoutePairRow({ pair, players }) {
+export default function RoutePairRow({ pair, players, onUndoDeath }) {
   const pokemon = pair.pokemon || {};
   const anyDead = Object.values(pokemon).some(m => m.alive === false);
 
@@ -8,7 +8,22 @@ export default function RoutePairRow({ pair, players }) {
     <div className={`route-row ${anyDead ? 'route-dead' : 'route-alive'}`}>
       <div className="route-label">
         <span className="route-name">{pair.route_name || `Location ${pair.route}`}</span>
-        {anyDead && <span className="route-fallen-tag">FALLEN</span>}
+        <div className="route-actions">
+          {anyDead && <span className="route-fallen-tag">FALLEN</span>}
+          {anyDead && onUndoDeath && (
+            <button
+              className="undo-button"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (window.confirm(`Undo death for ${pair.route_name || `Location ${pair.route}`}?`)) {
+                  onUndoDeath(pair.route);
+                }
+              }}
+            >
+              Undo
+            </button>
+          )}
+        </div>
       </div>
       <div className="route-cards">
         {(players || []).map(p => {

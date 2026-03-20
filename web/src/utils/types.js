@@ -19,8 +19,42 @@ export const TYPE_COLORS = {
   Fairy:    '#ec8fe6',
 };
 
-export const SPRITE_URL = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon';
+const SHOWDOWN_SPRITE_BASE = 'https://play.pokemonshowdown.com/sprites/sv';
 
-export function spriteUrl(speciesId) {
-  return speciesId > 0 ? `${SPRITE_URL}/${speciesId}.png` : null;
+const SPECIES_ALIASES = {
+  IronBouldr: 'ironboulder',
+  IronLeaves: 'ironleaves',
+  IronMoth: 'ironmoth',
+  IronHands: 'ironhands',
+  IronJuguls: 'ironjugulis',
+  IronThorns: 'ironthorns',
+  IronTreads: 'irontreads',
+  IronBundle: 'ironbundle',
+  GreatTusk: 'greattusk',
+  ScreamTail: 'screamtail',
+  BruteBonnet: 'brutebonnet',
+  FlutterMane: 'fluttermane',
+  SlitherWing: 'slitherwing',
+  SandyShocks: 'sandyshocks',
+  RoaringMoon: 'roaringmoon',
+  WalkingWake: 'walkingwake',
+  RagingBolt: 'ragingbolt',
+  GougingFire: 'gougingfire',
+  Terapagos: 'terapagos',
+};
+
+export function toShowdownId(speciesName = '') {
+  if (!speciesName) return '';
+  if (SPECIES_ALIASES[speciesName]) return SPECIES_ALIASES[speciesName];
+  return speciesName
+    .toLowerCase()
+    .replace(/♀/g, 'f')
+    .replace(/♂/g, 'm')
+    .replace(/['’:.\\s-]/g, '')
+    .replace(/[^a-z0-9]/g, '');
+}
+
+export function spriteUrl(speciesName) {
+  const id = toShowdownId(speciesName);
+  return id ? `${SHOWDOWN_SPRITE_BASE}/${id}.png` : null;
 }

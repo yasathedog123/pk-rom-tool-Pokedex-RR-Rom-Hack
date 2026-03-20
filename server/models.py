@@ -77,6 +77,13 @@ class SyncPokemon(BaseModel):
     types: list[str] = []
     alive: bool = True
     in_party: bool = True
+    nature: str = ""
+    ivs: dict = {}
+    evs: dict = {}
+    held_item: str = ""
+    held_item_id: int = 0
+    hidden_power: str = ""
+    friendship: int = 0
 
 
 class LocalEvent(BaseModel):
@@ -112,6 +119,13 @@ class CatchRecord(BaseModel):
     types: list[str] = []
     alive: bool = True
     in_party: bool = True
+    nature: str = ""
+    ivs: dict = {}
+    evs: dict = {}
+    held_item: str = ""
+    held_item_id: int = 0
+    hidden_power: str = ""
+    friendship: int = 0
     timestamp: datetime = Field(default_factory=datetime.utcnow)
 
 

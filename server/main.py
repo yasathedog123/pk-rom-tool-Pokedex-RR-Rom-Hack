@@ -152,6 +152,13 @@ def catch_from_sync_event(event: LocalEvent) -> CatchRecord:
         types=mon.types,
         alive=mon.alive,
         in_party=mon.in_party,
+        nature=mon.nature,
+        ivs=mon.ivs,
+        evs=mon.evs,
+        held_item=mon.held_item,
+        held_item_id=mon.held_item_id,
+        hidden_power=mon.hidden_power,
+        friendship=mon.friendship,
         timestamp=datetime.utcfromtimestamp(event.timestamp) if event.timestamp else datetime.utcnow(),
     )
 
@@ -190,6 +197,13 @@ def ensure_snapshot_catches(room: Room, snapshot: PlayerSnapshot):
             types=pokemon.types,
             alive=pokemon.current_hp > 0,
             in_party=True,
+            nature=pokemon.nature,
+            ivs=pokemon.ivs,
+            evs=pokemon.evs,
+            held_item=pokemon.held_item,
+            held_item_id=pokemon.held_item_id,
+            hidden_power=pokemon.hidden_power,
+            friendship=pokemon.friendship,
             timestamp=datetime.utcnow(),
         )
         room.catches.append(inferred)
@@ -477,6 +491,14 @@ async def serve_web_index():
 @app.get("/app/{path:path}")
 async def serve_web_assets(path: str):
     file_path = _web_dir / path
+    if file_path.is_file():
+        return FileResponse(str(file_path))
+    raise HTTPException(status_code=404)
+
+
+@app.get("/assets/{path:path}")
+async def serve_built_assets(path: str):
+    file_path = _web_dir / "assets" / path
     if file_path.is_file():
         return FileResponse(str(file_path))
     raise HTTPException(status_code=404)

@@ -10,7 +10,6 @@ import {
   getPlayerName, setPlayerName as saveName,
   getLocalUrl, setLocalUrl as saveLocal,
   getSyncUrl, setSyncUrl as saveSync,
-  getRoomCode,
 } from './utils/api';
 
 export default function App() {
@@ -18,8 +17,8 @@ export default function App() {
   const [localUrl, setLocalUrl]     = useState(getLocalUrl());
   const [syncUrl, setSyncUrl]       = useState(getSyncUrl());
 
-  const { connected: localOk, status, soulLink } = useLocalTracker(localUrl);
-  const room = useRoom(syncUrl, playerName, status, soulLink);
+  const { connected: localOk, status, soulLink, party: localParty } = useLocalTracker(localUrl);
+  const room = useRoom(syncUrl, playerName, status, soulLink, localParty);
 
   function handleNameChange(n)     { setPlayerName(n); saveName(n); }
   function handleLocalChange(u)    { setLocalUrl(u);   saveLocal(u); }
@@ -31,9 +30,40 @@ export default function App() {
   const roomEvents = room.roomState?.events || [];
   const roomPlayers = room.roomState?.players || [];
 
+  const localPartyByPersonality = new Map((localParty || []).map(mon => [mon.personality, mon]));
+  const snapshotByPlayer = new Map(
+    Object.entries(room.roomState?.player_snapshots || {}).map(([playerId, snapshot]) => [
+      playerId,
+      new Map((snapshot.current_party || []).map(mon => [mon.personality, mon])),
+    ])
+  );
+
+  const enrichedSoloRoutes = soloRoutes.map(route => ({
+    ...route,
+    pokemon: (route.pokemon || []).map(mon => ({
+      ...mon,
+      ...(localPartyByPersonality.get(mon.personality) || {}),
+    })),
+  }));
+
+  const enrichedRoomPairs = roomPairs.map(pair => {
+    const mergedPokemon = {};
+    Object.entries(pair.pokemon || {}).forEach(([playerId, mon]) => {
+      const snapMap = snapshotByPlayer.get(playerId);
+      const snapMon = snapMap?.get(mon.personality);
+      mergedPokemon[playerId] = {
+        ...mon,
+        ...snapMon,
+        route_name: pair.route_name,
+        met_location_name: snapMon?.met_location_name || pair.route_name,
+      };
+    });
+    return { ...pair, pokemon: mergedPokemon };
+  });
+
   const isRoom = room.mode === 'room' && room.roomState;
-  const activeRoutes = isRoom ? roomPairs.filter(p => Object.values(p.pokemon || {}).some(m => m.alive !== false)) : [];
-  const fallenRoutes = isRoom ? roomPairs.filter(p => Object.values(p.pokemon || {}).some(m => m.alive === false)) : [];
+  const activeRoutes = isRoom ? enrichedRoomPairs.filter(p => Object.values(p.pokemon || {}).some(m => m.alive !== false)) : [];
+  const fallenRoutes = isRoom ? enrichedRoomPairs.filter(p => Object.values(p.pokemon || {}).some(m => m.alive === false)) : [];
 
   return (
     <div className="app-shell">
@@ -73,8 +103,8 @@ export default function App() {
             <>
               <section className="section">
                 <h2 className="section-title">Encounters</h2>
-                {soloRoutes.length === 0 && <p className="muted">No encounters tracked yet. Start playing!</p>}
-                {soloRoutes.map(route => (
+                {enrichedSoloRoutes.length === 0 && <p className="muted">No encounters tracked yet. Start playing!</p>}
+                {enrichedSoloRoutes.map(route => (
                   <SoloPairRow key={route.locationId} route={route} playerName={playerName || 'You'} />
                 ))}
               </section>
@@ -93,14 +123,14 @@ export default function App() {
                   <p className="muted">No encounters tracked yet.</p>
                 )}
                 {activeRoutes.map(pair => (
-                  <RoutePairRow key={pair.route} pair={pair} players={roomPlayers} />
+                  <RoutePairRow key={pair.route} pair={pair} players={roomPlayers} onUndoDeath={room.undoDeath} />
                 ))}
               </section>
               {fallenRoutes.length > 0 && (
                 <section className="section graveyard">
                   <h2 className="section-title">Fallen Links</h2>
                   {fallenRoutes.map(pair => (
-                    <RoutePairRow key={pair.route} pair={pair} players={roomPlayers} />
+                    <RoutePairRow key={pair.route} pair={pair} players={roomPlayers} onUndoDeath={room.undoDeath} />
                   ))}
                 </section>
               )}
