@@ -1,4 +1,3 @@
-import { Fragment } from 'react';
 import useSprite from '../hooks/useSprite';
 import TypeBadge from './TypeBadge';
 
@@ -22,6 +21,7 @@ export default function PartyCard({ mon, routeName }) {
   const evs      = mon.evs || mon.EVs;
   const nature   = mon.nature;
   const heldItem = mon.held_item || mon.heldItem;
+  const friendship = mon.friendship;
   const hpRatio  = maxHp > 0 ? hp / maxHp : 0;
   const route    = routeName || mon.met_location_name || mon.metLocationName || mon.route_name || mon.routeName || '';
 
@@ -43,12 +43,23 @@ export default function PartyCard({ mon, routeName }) {
             {nature && <span className="pc-nature">{nature}</span>}
           </div>
           {alive && hasHp && (
-            <div className="pc-hp-wrap">
-              <div className="pc-hp-bar" style={{ width: `${hpRatio * 100}%`, background: hpColor(hpRatio) }} />
-              <span className="pc-hp-text">{hp}/{maxHp}</span>
+            <div className="pc-hp-row">
+              <div className="pc-hp-track">
+                <div className="pc-hp-fill" style={{ width: `${hpRatio * 100}%`, background: hpColor(hpRatio) }} />
+              </div>
+              <span className="pc-hp-val">{hp}/{maxHp}</span>
             </div>
           )}
           {!alive && <div className="pc-fallen">FALLEN</div>}
+          {friendship !== undefined && friendship !== null && (
+            <div className="pc-friend-row">
+              <span className="pc-friend-label">Friendship</span>
+              <div className="pc-friend-track">
+                <div className="pc-friend-fill" style={{ width: `${Math.min(100, (friendship / 255) * 100)}%` }} />
+              </div>
+              <span className="pc-friend-val">{friendship}</span>
+            </div>
+          )}
         </div>
         <div className="pc-sprite-col">
           {img ? (
@@ -57,16 +68,13 @@ export default function PartyCard({ mon, routeName }) {
           ) : (
             <div className="pc-sprite-fb">?</div>
           )}
+          {heldItem && heldItem !== 'None' && (
+            <div className="pc-held-item" title={heldItem}>{heldItem}</div>
+          )}
         </div>
       </div>
 
-      {heldItem && <div className="pc-item">Item: {heldItem}</div>}
-
-      {(ivs || evs) && (
-        <div className="pc-stats">
-          <StatTable ivs={ivs} evs={evs} />
-        </div>
-      )}
+      {(ivs || evs) && <StatBars ivs={ivs} evs={evs} />}
     </div>
   );
 }
@@ -79,51 +87,45 @@ export function EmptySlot() {
   );
 }
 
-function StatTable({ ivs, evs }) {
+function StatBars({ ivs, evs }) {
   const stats = [
-    ['HP',  ivs?.hp,  evs?.hp],
+    ['HP',  ivs?.hp, evs?.hp],
     ['ATK', ivs?.attack, evs?.attack],
     ['DEF', ivs?.defense, evs?.defense],
     ['SPA', ivs?.specialAttack, evs?.specialAttack],
     ['SPD', ivs?.specialDefense, evs?.specialDefense],
     ['SPE', ivs?.speed, evs?.speed],
   ];
-  const row1 = stats.slice(0, 3);
-  const row2 = stats.slice(3);
 
   return (
-    <table className="pc-stat-table">
-      <thead>
-        <tr>
-          {row1.map(([label]) => (
-            <th key={label} colSpan={2}>{label}</th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        <tr className="pc-stat-vals">
-          {row1.map(([label, iv, ev]) => (
-            <Fragment key={label}>
-              <td className={iv === 31 ? 'iv-perfect' : 'iv'}>{iv ?? '-'}</td>
-              <td className={ev > 0 ? 'ev-active' : 'ev'}>{ev ?? '-'}</td>
-            </Fragment>
-          ))}
-        </tr>
-        <tr className="pc-stat-hdr">
-          {row2.map(([label]) => (
-            <th key={label} colSpan={2}>{label}</th>
-          ))}
-        </tr>
-        <tr className="pc-stat-vals">
-          {row2.map(([label, iv, ev]) => (
-            <Fragment key={label}>
-              <td className={iv === 31 ? 'iv-perfect' : 'iv'}>{iv ?? '-'}</td>
-              <td className={ev > 0 ? 'ev-active' : 'ev'}>{ev ?? '-'}</td>
-            </Fragment>
-          ))}
-        </tr>
-      </tbody>
-    </table>
+    <div className="sb">
+      {stats.map(([label, iv, ev]) => (
+        <div key={label} className="sb-row">
+          <span className="sb-label">{label}</span>
+          <div className="sb-bars">
+            <div className="sb-track">
+              <div
+                className={`sb-fill sb-iv ${iv === 31 ? 'sb-perfect' : ''}`}
+                style={{ width: `${((iv ?? 0) / 31) * 100}%` }}
+              />
+            </div>
+            <div className="sb-track">
+              <div
+                className={`sb-fill sb-ev ${(ev ?? 0) > 0 ? 'sb-ev-active' : ''}`}
+                style={{ width: `${((ev ?? 0) / 252) * 100}%` }}
+              />
+            </div>
+          </div>
+          <span className="sb-vals">
+            <span className="sb-iv-num">{iv ?? '-'}</span>
+            <span className="sb-ev-num">{ev ?? '-'}</span>
+          </span>
+        </div>
+      ))}
+      <div className="sb-legend">
+        <span className="sb-legend-iv">IV</span>
+        <span className="sb-legend-ev">EV</span>
+      </div>
+    </div>
   );
 }
-

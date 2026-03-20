@@ -4,30 +4,32 @@ export default function RouteLinkList({ links, players }) {
   if (!links || links.length === 0) return null;
 
   return (
-    <div className="rll">
-      <div className="rll-header">Route Links</div>
-      <div className="rll-rows">
-        {links.map(link => (
-          <div key={link.route} className={`rll-row ${link.anyDead ? 'rll-dead' : ''}`}>
-            <div className="rll-route">{link.routeName || `Location ${link.route}`}</div>
-            <div className="rll-mons">
+    <div className="et-wrap">
+      <div className="et glass-card">
+        <div className="et-head-row">
+          <div className="et-col-route et-hdr">Route</div>
+          {(players || []).map(p => (
+            <div key={p.player_id || p} className="et-col-trainer et-hdr">
+              {p.player_name || p}
+            </div>
+          ))}
+        </div>
+        <div className="et-body">
+          {links.map((link, idx) => (
+            <div key={link.route} className={`et-row ${link.anyDead ? 'et-row-dead' : ''} ${idx % 2 === 1 ? 'et-row-alt' : ''}`}>
+              <div className="et-col-route">{link.routeName || `Loc ${link.route}`}</div>
               {(players || []).map(p => {
                 const pid = p.player_id || p;
-                const pname = p.player_name || p;
                 const mon = link.pokemon?.[pid];
-                if (!mon) {
-                  return (
-                    <div key={pid} className="rll-slot rll-empty-slot">
-                      <span className="rll-pname">{pname}</span>
-                      <span className="rll-waiting">--</span>
-                    </div>
-                  );
-                }
-                return <LinkEntry key={pid} mon={mon} playerName={pname} />;
+                return (
+                  <div key={pid} className="et-col-trainer">
+                    {mon ? <EncounterCell mon={mon} /> : <span className="et-empty">--</span>}
+                  </div>
+                );
               })}
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -37,27 +39,38 @@ export function SoloRouteLinkList({ routes }) {
   if (!routes || routes.length === 0) return null;
 
   return (
-    <div className="rll">
-      <div className="rll-header">Encounters by Route</div>
-      <div className="rll-rows">
-        {routes.map(route => {
-          const mon = route.pokemon?.[0];
-          const anyDead = (route.pokemon || []).some(m => m.alive === false || (m.currentHP ?? m.current_hp ?? 1) === 0);
-          return (
-            <div key={route.locationId} className={`rll-row ${anyDead ? 'rll-dead' : ''}`}>
-              <div className="rll-route">{route.locationName || `Location ${route.locationId}`}</div>
-              <div className="rll-mons">
-                {mon ? <LinkEntry mon={mon} /> : <span className="rll-waiting">--</span>}
+    <div className="et-wrap et-wrap-solo">
+      <div className="et glass-card">
+        <div className="et-head-row">
+          <div className="et-col-route et-hdr">Route</div>
+          <div className="et-col-trainer et-hdr">Pokemon</div>
+          <div className="et-col-status et-hdr">Status</div>
+        </div>
+        <div className="et-body">
+          {routes.map((route, idx) => {
+            const mon = route.pokemon?.[0];
+            const anyDead = (route.pokemon || []).some(m => m.alive === false || (m.currentHP ?? m.current_hp ?? 1) === 0);
+            return (
+              <div key={route.locationId} className={`et-row ${anyDead ? 'et-row-dead' : ''} ${idx % 2 === 1 ? 'et-row-alt' : ''}`}>
+                <div className="et-col-route">{route.locationName || `Loc ${route.locationId}`}</div>
+                <div className="et-col-trainer">
+                  {mon ? <EncounterCell mon={mon} /> : <span className="et-empty">--</span>}
+                </div>
+                <div className="et-col-status">
+                  {mon && (mon.alive === false ? <span className="et-tag-dead">Fallen</span>
+                    : (mon.in_party ?? mon.inParty) === false ? <span className="et-tag-box">Boxed</span>
+                    : <span className="et-tag-party">Party</span>)}
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
     </div>
   );
 }
 
-function LinkEntry({ mon, playerName }) {
+function EncounterCell({ mon }) {
   const species = mon.species_name || mon.species || '';
   const name = mon.nickname || species || '???';
   const img = useSprite(species);
@@ -65,17 +78,16 @@ function LinkEntry({ mon, playerName }) {
   const inParty = mon.in_party ?? mon.inParty ?? true;
 
   return (
-    <div className={`rll-slot ${!alive ? 'rll-slot-dead' : ''}`}>
-      {playerName && <span className="rll-pname">{playerName}</span>}
-      <div className="rll-mon">
-        {img ? (
-          <img className="rll-sprite" src={img} alt={species} loading="lazy" />
-        ) : (
-          <div className="rll-sprite-fb">?</div>
-        )}
-        <span className="rll-name">{name}</span>
-        {!inParty && <span className="rll-box-tag">boxed</span>}
-        {!alive && <span className="rll-dead-tag">fallen</span>}
+    <div className={`et-cell ${!alive ? 'et-cell-dead' : ''}`}>
+      {img ? (
+        <img className="et-sprite" src={img} alt={species} loading="lazy" />
+      ) : (
+        <div className="et-sprite-fb">?</div>
+      )}
+      <div className="et-cell-info">
+        <span className="et-cell-name">{name}</span>
+        {!alive && <span className="et-tag-dead">Fallen</span>}
+        {alive && !inParty && <span className="et-tag-box">Boxed</span>}
       </div>
     </div>
   );

@@ -107,7 +107,6 @@ export default function App() {
   }));
 
   const filteredSoloRoutes = applySoloFirstCatch(enrichedSoloRoutes, soloAssignments);
-
   const allSoloCatches = enrichedSoloRoutes.flatMap(r => r.pokemon || []);
 
   const enrichedLocalParty = (localParty || []).map(mon => {
@@ -136,7 +135,6 @@ export default function App() {
   });
 
   const roomRouteMap = buildRoomRouteMap(enrichedRoomPairs);
-
   const isRoom = room.mode === 'room' && room.roomState;
 
   const trainerParties = isRoom
@@ -161,10 +159,8 @@ export default function App() {
     anyDead: Object.values(pair.pokemon || {}).some(m => m.alive === false),
   }));
 
-  function handleOpenReassign(routeId) {
-    setFocusRoute(routeId ?? null);
-    setRouteManagerOpen(true);
-  }
+  const isSolo = !isRoom;
+  const isMulti = isRoom && trainerParties.length > 1;
 
   function handleSoloAssign(routeId, personality) {
     const next = { ...soloAssignments, [String(routeId)]: personality };
@@ -212,39 +208,67 @@ export default function App() {
             </div>
           )}
 
-          {localOk && (
-            <>
-              <section className="section">
+          {localOk && isSolo && (
+            <div className="layout-solo">
+              <section className="solo-party">
                 <h2 className="section-title">Party</h2>
                 <div className="party-grids">
                   {trainerParties.map(t => (
-                    <PartyGrid
-                      key={t.playerId}
-                      trainerName={t.name}
-                      party={t.party}
-                      routeMap={isRoom ? roomRouteMap : soloRouteMap}
-                    />
+                    <PartyGrid key={t.playerId} trainerName={t.name} party={t.party} routeMap={soloRouteMap} />
                   ))}
                 </div>
               </section>
+              <section className="solo-encounters">
+                {filteredSoloRoutes.length > 0 && <SoloRouteLinkList routes={filteredSoloRoutes} />}
+                <div className="solo-events">
+                  <h2 className="section-title">Events</h2>
+                  <EventFeed events={soloEvents} />
+                </div>
+              </section>
+            </div>
+          )}
 
-              {isRoom && roomLinks.length > 0 && (
+          {localOk && isMulti && (
+            <div className="layout-multi">
+              <section className="section">
+                <h2 className="section-title">Party</h2>
+                <div className="party-grids party-grids-center">
+                  {trainerParties.map(t => (
+                    <PartyGrid key={t.playerId} trainerName={t.name} party={t.party} routeMap={roomRouteMap} />
+                  ))}
+                </div>
+              </section>
+              <div className="gradient-divider" />
+              {roomLinks.length > 0 && (
                 <section className="section">
                   <RouteLinkList links={roomLinks} players={roomPlayers} />
                 </section>
               )}
-
-              {!isRoom && filteredSoloRoutes.length > 0 && (
-                <section className="section">
-                  <SoloRouteLinkList routes={filteredSoloRoutes} />
-                </section>
-              )}
-
-              <section className="section feed-section">
-                <h2 className="section-title">{isRoom ? 'Room Events' : 'Events'}</h2>
-                <EventFeed events={isRoom ? roomEvents : soloEvents} />
+              <section className="section">
+                <h2 className="section-title">Room Events</h2>
+                <EventFeed events={roomEvents} />
               </section>
-            </>
+            </div>
+          )}
+
+          {localOk && isRoom && !isMulti && (
+            <div className="layout-solo">
+              <section className="solo-party">
+                <h2 className="section-title">Party</h2>
+                <div className="party-grids">
+                  {trainerParties.map(t => (
+                    <PartyGrid key={t.playerId} trainerName={t.name} party={t.party} routeMap={roomRouteMap} />
+                  ))}
+                </div>
+              </section>
+              <section className="solo-encounters">
+                {roomLinks.length > 0 && <RouteLinkList links={roomLinks} players={roomPlayers} />}
+                <div className="solo-events">
+                  <h2 className="section-title">Room Events</h2>
+                  <EventFeed events={roomEvents} />
+                </div>
+              </section>
+            </div>
           )}
         </main>
       </div>

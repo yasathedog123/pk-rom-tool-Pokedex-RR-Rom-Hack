@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import useSprite from '../hooks/useSprite';
 
 export default function RouteManager({ routes, allCatches, assignments, onAssign, onClose, focusRoute }) {
@@ -23,62 +24,37 @@ export default function RouteManager({ routes, allCatches, assignments, onAssign
   const unassigned = allCatches.filter(m => !resolvedPersonalities.has(m.personality));
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal-content" onClick={e => e.stopPropagation()}>
-        <div className="modal-header">
+    <div className="rm-backdrop" onClick={onClose}>
+      <div className="rm-modal glass-card" onClick={e => e.stopPropagation()}>
+        <div className="rm-header">
           <h2>Manage Route Assignments</h2>
-          <button className="modal-close" onClick={onClose}>&times;</button>
+          <button className="rm-close" onClick={onClose}>&times;</button>
         </div>
-        <div className="modal-body">
+        <div className="rm-scroll">
           {routeGroups.map(({ routeId, routeName, assigned, alternatives }) => (
-            <div
+            <RouteSection
               key={routeId}
-              className={`rm-route ${focusRoute === routeId ? 'rm-route-focus' : ''}`}
-            >
-              <div className="rm-route-header">{routeName}</div>
-              {assigned && (
-                <MiniMonRow mon={assigned} tag="ASSIGNED" />
-              )}
-              {!assigned && (
-                <div className="rm-empty">No Pokemon assigned</div>
-              )}
-              {alternatives.map(m => (
-                <MiniMonRow
-                  key={m.personality}
-                  mon={m}
-                  tag="available"
-                  action={
-                    <button
-                      className="rm-assign-btn"
-                      onClick={() => onAssign(routeId, m.personality)}
-                    >
-                      Assign
-                    </button>
-                  }
-                />
-              ))}
-            </div>
+              routeId={routeId}
+              routeName={routeName}
+              assigned={assigned}
+              alternatives={alternatives}
+              onAssign={onAssign}
+              focused={focusRoute === routeId}
+            />
           ))}
 
           {unassigned.length > 0 && (
-            <div className="rm-route">
-              <div className="rm-route-header">Unassigned Pokemon</div>
+            <div className="rm-section">
+              <div className="rm-section-head">Unassigned</div>
               {unassigned.map(m => {
                 const metLoc = m.metLocation ?? m.met_location ?? m.route;
                 const metName = m.metLocationName || m.met_location_name || m.route_name || `Loc ${metLoc}`;
                 return (
-                  <MiniMonRow
+                  <MonRow
                     key={m.personality}
                     mon={m}
-                    tag={`from ${metName}`}
-                    action={
-                      <button
-                        className="rm-assign-btn"
-                        onClick={() => onAssign(metLoc, m.personality)}
-                      >
-                        Assign
-                      </button>
-                    }
+                    sub={`from ${metName}`}
+                    action={<button className="rm-btn" onClick={() => onAssign(metLoc, m.personality)}>Assign</button>}
                   />
                 );
               })}
@@ -90,26 +66,55 @@ export default function RouteManager({ routes, allCatches, assignments, onAssign
   );
 }
 
-function MiniMonRow({ mon, tag, action }) {
+function RouteSection({ routeId, routeName, assigned, alternatives, onAssign, focused }) {
+  const [open, setOpen] = useState(focused || alternatives.length > 0);
+
+  return (
+    <div className={`rm-section ${focused ? 'rm-section-focus' : ''}`}>
+      <div className="rm-section-head" onClick={() => setOpen(o => !o)}>
+        <span>{routeName}</span>
+        <span className="rm-chevron">{open ? '▾' : '▸'}</span>
+      </div>
+      {open && (
+        <div className="rm-section-body">
+          {assigned ? (
+            <MonRow mon={assigned} highlight />
+          ) : (
+            <div className="rm-empty-slot">No Pokemon assigned</div>
+          )}
+          {alternatives.map(m => (
+            <MonRow
+              key={m.personality}
+              mon={m}
+              sub="available"
+              action={<button className="rm-btn" onClick={() => onAssign(routeId, m.personality)}>Assign</button>}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MonRow({ mon, highlight, sub, action }) {
   const species = mon.species_name || mon.species || '';
   const name = mon.nickname || species || '???';
   const img = useSprite(species);
 
   return (
-    <div className="rm-mon-row">
-      <div className="rm-mon-sprite-wrap">
-        {img ? (
-          <img className="rm-mon-sprite" src={img} alt={species} loading="lazy" />
-        ) : (
-          <div className="rm-mon-sprite-fallback">?</div>
-        )}
+    <div className={`rm-row ${highlight ? 'rm-row-active' : ''}`}>
+      {img ? (
+        <img className="rm-sprite" src={img} alt={species} loading="lazy" />
+      ) : (
+        <div className="rm-sprite-fb">?</div>
+      )}
+      <div className="rm-row-info">
+        <span className="rm-row-name">{name}</span>
+        <span className="rm-row-level">Lv. {mon.level || 0}</span>
       </div>
-      <div className="rm-mon-info">
-        <span className="rm-mon-name">{name}</span>
-        <span className="rm-mon-level">Lv. {mon.level || 0}</span>
-      </div>
-      {tag && <span className={`rm-tag ${tag === 'ASSIGNED' ? 'rm-tag-assigned' : 'rm-tag-alt'}`}>{tag}</span>}
-      {action && <div className="rm-mon-action">{action}</div>}
+      {sub && <span className="rm-row-sub">{sub}</span>}
+      {highlight && <span className="rm-row-tag">Assigned</span>}
+      {action && <div className="rm-row-action">{action}</div>}
     </div>
   );
 }
