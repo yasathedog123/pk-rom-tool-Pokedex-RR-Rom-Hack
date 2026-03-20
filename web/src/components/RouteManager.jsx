@@ -1,7 +1,15 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import useSprite from '../hooks/useSprite';
 
 export default function RouteManager({ routes, allCatches, assignments, onAssign, onClose, focusRoute }) {
+  const [flashId, setFlashId] = useState(null);
+
+  const handleAssign = useCallback((routeId, personality) => {
+    setFlashId(personality);
+    onAssign(routeId, personality);
+    setTimeout(() => setFlashId(null), 700);
+  }, [onAssign]);
+
   const routeGroups = routes.map(route => {
     const routeId = route.locationId ?? route.route ?? route.route_id;
     const routeName = route.locationName || route.route_name || `Location ${routeId}`;
@@ -38,8 +46,9 @@ export default function RouteManager({ routes, allCatches, assignments, onAssign
               routeName={routeName}
               assigned={assigned}
               alternatives={alternatives}
-              onAssign={onAssign}
+              onAssign={handleAssign}
               focused={focusRoute === routeId}
+              flashId={flashId}
             />
           ))}
 
@@ -54,7 +63,8 @@ export default function RouteManager({ routes, allCatches, assignments, onAssign
                     key={m.personality}
                     mon={m}
                     sub={`from ${metName}`}
-                    action={<button className="rm-btn" onClick={() => onAssign(metLoc, m.personality)}>Assign</button>}
+                    flash={flashId === m.personality}
+                    action={<button className="rm-btn" onClick={() => handleAssign(metLoc, m.personality)}>Assign</button>}
                   />
                 );
               })}
@@ -66,7 +76,7 @@ export default function RouteManager({ routes, allCatches, assignments, onAssign
   );
 }
 
-function RouteSection({ routeId, routeName, assigned, alternatives, onAssign, focused }) {
+function RouteSection({ routeId, routeName, assigned, alternatives, onAssign, focused, flashId }) {
   const [open, setOpen] = useState(focused || alternatives.length > 0);
 
   return (
@@ -78,7 +88,7 @@ function RouteSection({ routeId, routeName, assigned, alternatives, onAssign, fo
       {open && (
         <div className="rm-section-body">
           {assigned ? (
-            <MonRow mon={assigned} highlight />
+            <MonRow mon={assigned} highlight flash={flashId === assigned.personality} />
           ) : (
             <div className="rm-empty-slot">No Pokemon assigned</div>
           )}
@@ -87,6 +97,7 @@ function RouteSection({ routeId, routeName, assigned, alternatives, onAssign, fo
               key={m.personality}
               mon={m}
               sub="available"
+              flash={flashId === m.personality}
               action={<button className="rm-btn" onClick={() => onAssign(routeId, m.personality)}>Assign</button>}
             />
           ))}
@@ -96,13 +107,19 @@ function RouteSection({ routeId, routeName, assigned, alternatives, onAssign, fo
   );
 }
 
-function MonRow({ mon, highlight, sub, action }) {
+function MonRow({ mon, highlight, sub, action, flash }) {
   const species = mon.species_name || mon.species || '';
   const name = mon.nickname || species || '???';
   const img = useSprite(species);
 
+  const cls = [
+    'rm-row',
+    highlight ? 'rm-row-active' : '',
+    flash ? 'rm-row-flash' : '',
+  ].filter(Boolean).join(' ');
+
   return (
-    <div className={`rm-row ${highlight ? 'rm-row-active' : ''}`}>
+    <div className={cls}>
       {img ? (
         <img className="rm-sprite" src={img} alt={species} loading="lazy" />
       ) : (

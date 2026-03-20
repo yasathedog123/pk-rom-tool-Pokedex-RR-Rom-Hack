@@ -116,18 +116,30 @@ button:active { transform:scale(0.97); }
 .btn-text { background:none; color:var(--text-muted); padding:2px 0; font-size:11px; }
 .btn-text:hover { color:var(--text); }
 
+/* ---- Modal Animations ---- */
+@keyframes backdropFadeIn {
+  from { opacity:0; }
+  to   { opacity:1; }
+}
+@keyframes modalSlideUp {
+  from { opacity:0; transform:translateY(24px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
 /* ---- Settings Modal ---- */
 .sm-backdrop {
   position:fixed; inset:0; z-index:100;
   background:rgba(0,0,0,.55);
   display:flex; align-items:center; justify-content:center;
   backdrop-filter:blur(8px);
+  animation:backdropFadeIn .2s ease-out;
 }
 .sm-modal {
-  width:90%; max-width:420px;
-  max-height:80vh;
+  width:90%; max-width:500px;
+  max-height:85vh;
   display:flex; flex-direction:column;
   box-shadow:0 20px 60px rgba(0,0,0,.5);
+  animation:modalSlideUp .25s ease-out;
 }
 .sm-header {
   display:flex; justify-content:space-between; align-items:center;
@@ -172,7 +184,7 @@ button:active { transform:scale(0.97); }
 .ctrl-sprite-none { font-size:10px; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:.5px; }
 
 /* ---- Main ---- */
-.main-area { flex:1; padding:20px 24px; overflow-y:auto; }
+.main-area { flex:1; padding:20px 40px; overflow-y:auto; max-width:1400px; margin:0 auto; width:100%; }
 .section { margin-bottom:20px; }
 .section-title {
   font-size:11px; font-weight:600; text-transform:uppercase;
@@ -187,11 +199,12 @@ button:active { transform:scale(0.97); }
 /* ---- Solo Layout ---- */
 .layout-solo {
   display: flex;
-  gap: 24px;
+  gap: 28px;
   align-items: flex-start;
+  justify-content: center;
 }
 .solo-party { flex-shrink:0; }
-.solo-encounters { flex:1; min-width:0; }
+.solo-encounters { flex:1; min-width:0; max-width:420px; }
 .solo-events { margin-top:16px; }
 
 /* ---- Multi Layout ---- */
@@ -213,7 +226,7 @@ button:active { transform:scale(0.97); }
   padding:10px 14px; margin-bottom:10px;
 }
 .pg-banner-sprite {
-  height:48px; image-rendering:pixelated; object-fit:contain; flex-shrink:0;
+  height:72px; image-rendering:pixelated; object-fit:contain; flex-shrink:0;
 }
 .pg-banner-info {
   display:flex; flex-direction:column; gap:2px; min-width:0;
@@ -301,13 +314,13 @@ button:active { transform:scale(0.97); }
   pointer-events:none;
 }
 .pc-sprite {
-  width:96px; height:96px;
+  width:115px; height:115px;
   image-rendering:pixelated; object-fit:contain;
   filter:drop-shadow(0 2px 6px rgba(0,0,0,0.3));
   animation: breathe 3s ease-in-out infinite;
 }
 .pc-sprite-fb {
-  width:96px; height:96px;
+  width:115px; height:115px;
   display:flex; align-items:center; justify-content:center;
   font-weight:700; font-size:24px; color:rgba(255,255,255,0.2);
 }
@@ -315,7 +328,7 @@ button:active { transform:scale(0.97); }
 
 @keyframes breathe {
   0%, 100% { transform: scaleX(1) scaleY(1); }
-  50%      { transform: scaleX(1.03) scaleY(0.97); }
+  50%      { transform: scaleX(1.04) scaleY(0.96); }
 }
 
 .pc-route-badge {
@@ -558,12 +571,14 @@ button:active { transform:scale(0.97); }
   background:rgba(0,0,0,.55);
   display:flex; align-items:center; justify-content:center;
   backdrop-filter:blur(8px);
+  animation:backdropFadeIn .2s ease-out;
 }
 .rm-modal {
-  width:90%; max-width:480px;
-  max-height:80vh;
+  width:90%; max-width:560px;
+  max-height:85vh;
   display:flex; flex-direction:column;
   box-shadow:0 20px 60px rgba(0,0,0,.5);
+  animation:modalSlideUp .25s ease-out;
 }
 .rm-header {
   display:flex; justify-content:space-between; align-items:center;
@@ -652,11 +667,13 @@ button:active { transform:scale(0.97); }
   background:rgba(0,0,0,.6);
   display:flex; align-items:center; justify-content:center;
   backdrop-filter:blur(8px);
+  animation:backdropFadeIn .2s ease-out;
 }
 .tsp-modal {
-  width:90%; max-width:560px; max-height:80vh;
+  width:90%; max-width:640px; max-height:85vh;
   display:flex; flex-direction:column;
   box-shadow:0 20px 60px rgba(0,0,0,.5);
+  animation:modalSlideUp .25s ease-out;
 }
 .tsp-header {
   display:flex; justify-content:space-between; align-items:center;
@@ -693,6 +710,50 @@ button:active { transform:scale(0.97); }
   height:48px; display:flex; align-items:center; justify-content:center;
   font-size:10px; font-weight:600; color:var(--text-muted);
   text-transform:uppercase; letter-spacing:.5px;
+}
+
+/* ---- FLIP Swap Animation ---- */
+.pc-flip-animate {
+  transition: transform .35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ---- Assign Flash ---- */
+@keyframes assignFlash {
+  0%   { background:rgba(59,130,246,0.25); }
+  100% { background:transparent; }
+}
+.rm-row-flash {
+  animation: assignFlash .6s ease-out;
+}
+
+/* ---- Footer ---- */
+.app-footer {
+  padding:16px 24px 20px;
+  border-top:1px solid var(--glass-border);
+  background:rgba(255,255,255,0.02);
+  text-align:center;
+  flex-shrink:0;
+}
+.footer-brand {
+  display:flex; justify-content:center; align-items:center;
+  gap:16px; margin-bottom:6px;
+}
+.footer-brand-item {
+  font-size:11px; color:var(--text-muted); font-weight:500;
+}
+.footer-brand-item strong {
+  color:var(--accent); font-weight:700;
+}
+.footer-dot {
+  font-size:8px; color:rgba(255,255,255,0.15);
+}
+.footer-legal {
+  font-size:9px; color:rgba(255,255,255,0.25);
+  line-height:1.6; max-width:600px; margin:0 auto;
+}
+.footer-legal-muted {
+  color:rgba(255,255,255,0.18);
+  cursor:default;
 }
 
 /* ---- Responsive ---- */

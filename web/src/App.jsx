@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import StatusBar from './components/StatusBar';
 import SettingsModal from './components/SettingsModal';
 import PartyGrid from './components/PartyGrid';
@@ -8,6 +8,7 @@ import RouteManager from './components/RouteManager';
 import TrainerSpritePicker, { getTrainerSpriteUrl } from './components/TrainerSpritePicker';
 import useLocalTracker from './hooks/useLocalTracker';
 import useRoom from './hooks/useRoom';
+import { getMockPlayerCount, generateMockData } from './utils/mockData';
 import {
   getPlayerId, getPlayerName, setPlayerName as saveName,
   getLocalUrl, setLocalUrl as saveLocal,
@@ -187,8 +188,29 @@ export default function App() {
     anyDead: Object.values(pair.pokemon || {}).some(m => m.alive === false),
   }));
 
-  const isSolo = !isRoom;
-  const isMulti = isRoom && trainerParties.length > 1;
+  const mockPlayerCount = getMockPlayerCount();
+  const mockData = useMemo(() => {
+    if (mockPlayerCount === 0) return null;
+    const localPlayer = {
+      name: resolvedTrainerName,
+      playerId: localPlayerId,
+      party: enrichedLocalParty,
+      spriteUrl: trainerSpriteUrl,
+      money: trainerInfo?.money,
+      coins: trainerInfo?.coins,
+    };
+    return generateMockData(localPlayer);
+  }, [mockPlayerCount, resolvedTrainerName, localPlayerId, enrichedLocalParty, trainerSpriteUrl, trainerInfo?.money, trainerInfo?.coins]);
+
+  const isMockMode = mockData !== null;
+  const isSolo = !isRoom && !isMockMode;
+  const isMulti = (isRoom && trainerParties.length > 1) || isMockMode;
+
+  const finalTrainerParties = isMockMode ? mockData.trainerParties : trainerParties;
+  const finalRoomLinks = isMockMode ? mockData.roomLinks : roomLinks;
+  const finalRoomPlayers = isMockMode ? mockData.roomPlayers : roomPlayers;
+  const finalRoomEvents = isMockMode ? mockData.roomEvents : roomEvents;
+  const finalRouteMap = isMockMode ? buildRoomRouteMap(mockData.roomPairs) : roomRouteMap;
 
   function handleSoloAssign(routeId, personality) {
     const next = { ...soloAssignments, [String(routeId)]: personality };
@@ -244,25 +266,25 @@ export default function App() {
             <section className="section">
               <h2 className="section-title">Party</h2>
               <div className="party-grids party-grids-center">
-                {trainerParties.map(t => (
-                  <PartyGrid key={t.playerId} trainerName={t.name} party={t.party} routeMap={roomRouteMap} trainerSprite={t.spriteUrl} money={t.money} coins={t.coins} />
+                {finalTrainerParties.map(t => (
+                  <PartyGrid key={t.playerId} trainerName={t.name} party={t.party} routeMap={finalRouteMap} trainerSprite={t.spriteUrl} money={t.money} coins={t.coins} />
                 ))}
               </div>
             </section>
             <div className="gradient-divider" />
-            {roomLinks.length > 0 && (
+            {finalRoomLinks.length > 0 && (
               <section className="section">
-                <RouteLinkList links={roomLinks} players={roomPlayers} />
+                <RouteLinkList links={finalRoomLinks} players={finalRoomPlayers} />
               </section>
             )}
             <section className="section">
-              <h2 className="section-title">Room Events</h2>
-              <EventFeed events={roomEvents} />
+              <h2 className="section-title">{isMockMode ? 'Events (Mock)' : 'Room Events'}</h2>
+              <EventFeed events={finalRoomEvents} />
             </section>
           </div>
         )}
 
-        {localOk && isRoom && !isMulti && (
+        {localOk && isRoom && !isMulti && !isMockMode && (
           <div className="layout-solo">
             <section className="solo-party">
               <h2 className="section-title">Party</h2>
@@ -311,6 +333,21 @@ export default function App() {
           onClose={() => setSpritePickerOpen(false)}
         />
       )}
+
+      <footer className="app-footer">
+        <div className="footer-brand">
+          <span className="footer-brand-item">Made by <strong>Foins</strong></span>
+          <span className="footer-dot">&bull;</span>
+          <span className="footer-brand-item">Maintained by <strong>Foins</strong></span>
+        </div>
+        <div className="footer-legal">
+          All content &amp; design &copy; Pok&eacute;mon Nuzlocke Tracker, 2021-2026.
+          {' '}<span className="footer-legal-muted">Privacy Policy</span>.
+          {' '}<span className="footer-legal-muted">Credits</span>.
+          <br />
+          Pok&eacute;mon images &amp; names &copy; 1995-2024 Nintendo/Creatures Inc./GAME FREAK inc. TM
+        </div>
+      </footer>
 
       {routeManagerOpen && (() => {
         const roomAssignments = room.roomState?.route_assignments?.[localPlayerId] || {};
