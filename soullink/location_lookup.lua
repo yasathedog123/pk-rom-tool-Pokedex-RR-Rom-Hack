@@ -5,6 +5,7 @@ local LocationLookup = {}
 local GAME_LOCATIONS = {}
 
 -- Radical Red (CFRU) — dumped from ROM via tools/dump_locations.lua
+-- Date: 2026-03-21, Table: ROM+0x3F1B4C, stride=4
 -- WARNING: These IDs are specific to Radical Red. Other CFRU hacks
 -- (FireRed, LeafGreen, Unbound, etc.) have their own mappings.
 -- Run tools/dump_locations.lua to generate a table for a new game.
