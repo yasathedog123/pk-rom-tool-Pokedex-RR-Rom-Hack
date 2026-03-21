@@ -171,8 +171,14 @@ function pokemonData.getAbilityName(abilityId)
         return "Unknown"
     end
 
-    local nameAddr = gameUtils.hexToNumber(abilityNameTableAddr) + (abilityId * 13)
-    local nameBytes = gameUtils.readBytes(nameAddr, 12, "ROM")
+    local stride = gameData.addresses.abilityNameStride or 13
+    local nameAddr = gameUtils.hexToNumber(abilityNameTableAddr) + (abilityId * stride)
+    local nameBytes
+    if gameData.gameInfo.generation == "CFRU" then
+        nameBytes = gameUtils.readBytesCFRU(nameAddr, stride - 1)
+    else
+        nameBytes = gameUtils.readBytes(nameAddr, 12, "ROM")
+    end
     return charmaps.decryptText(nameBytes) or "Unknown"
 end
 
@@ -259,13 +265,12 @@ function pokemonData.getMoveName(moveId)
     end
     
 
-    -- If we have a valid moves table address
-    -- Moves are 13 bytes each
     if gameData and movesTableAddr then
-        local moveNameAddr = movesTableAddr + (moveId * 13)
+        local stride = gameData.addresses.moveNameStride or 13
+        local moveNameAddr = movesTableAddr + (moveId * stride)
         local nameBytes
         if gameData.gameInfo.generation == "CFRU" then
-            nameBytes = gameUtils.readBytesCFRU(moveNameAddr, 12)
+            nameBytes = gameUtils.readBytesCFRU(moveNameAddr, stride - 1)
         else
             nameBytes = gameUtils.readBytes(moveNameAddr, 12, "ROM")
         end
