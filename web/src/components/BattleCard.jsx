@@ -56,22 +56,21 @@ export default function BattleCard({ enemyParty }) {
     }
   }, [hasEnemies]);
 
-  function handleAnimEnd() {
-    if (exiting) {
+  useEffect(() => {
+    if (!exiting) return;
+    const t = setTimeout(() => {
       setVisible(false);
       setExiting(false);
-    }
-  }
+    }, 300);
+    return () => clearTimeout(t);
+  }, [exiting]);
 
   if (!visible) return null;
 
   const displayParty = hasEnemies ? enemyParty : lastPartyRef.current;
 
   return (
-    <div
-      className={`bc-wrap ${exiting ? 'bc-exit' : 'bc-enter'}`}
-      onAnimationEnd={handleAnimEnd}
-    >
+    <div className={`bc-wrap ${exiting ? 'bc-exit' : 'bc-enter'}`}>
       <h3 className="section-title">Opponent</h3>
       {displayParty.map((mon, i) => (
         <BattleOpponent key={mon.personality || i} mon={mon} isActive={i === 0} />

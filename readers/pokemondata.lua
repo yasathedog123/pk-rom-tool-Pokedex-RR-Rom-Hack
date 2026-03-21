@@ -184,8 +184,9 @@ end
 
 -- Get type name from constants
 function pokemonData.getTypeName(typeId)
-    if typeId >= 0 and typeId < #constants.pokemonData.type then
-        return constants.pokemonData.type[typeId + 1]
+    local name = constants.pokemonData.type[typeId + 1]
+    if name then
+        return name
     end
     return "Unknown"
 end
