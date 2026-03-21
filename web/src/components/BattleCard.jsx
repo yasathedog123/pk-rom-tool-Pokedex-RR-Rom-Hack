@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import usePokemonData from '../hooks/usePokemonData';
+import useMoveData from '../hooks/useMoveData';
 import TypeBadge from './TypeBadge';
 import { TYPE_COLORS } from '../utils/types';
 
@@ -32,6 +33,12 @@ const STATUS_META = {
   Frozen:    { label: 'FRZ', cls: 'pc-status-frz' },
 };
 
+const DAMAGE_CLASS_LABEL = {
+  physical: 'Phys',
+  special: 'Spec',
+  status: 'Stat',
+};
+
 export default function BattleCard({ enemyParty }) {
   const [visible, setVisible] = useState(false);
   const [exiting, setExiting] = useState(false);
@@ -59,8 +66,6 @@ export default function BattleCard({ enemyParty }) {
   if (!visible) return null;
 
   const displayParty = hasEnemies ? enemyParty : lastPartyRef.current;
-  const activeMons = displayParty.filter(m => (m.currentHP ?? m.current_hp ?? 0) > 0);
-  const show = activeMons.length > 0 ? activeMons : displayParty.slice(0, 1);
 
   return (
     <div
@@ -68,14 +73,14 @@ export default function BattleCard({ enemyParty }) {
       onAnimationEnd={handleAnimEnd}
     >
       <h3 className="section-title">Opponent</h3>
-      {show.map((mon, i) => (
-        <BattleOpponent key={mon.personality || i} mon={mon} />
+      {displayParty.map((mon, i) => (
+        <BattleOpponent key={mon.personality || i} mon={mon} isActive={i === 0} />
       ))}
     </div>
   );
 }
 
-function BattleOpponent({ mon }) {
+function BattleOpponent({ mon, isActive }) {
   const species = mon.species || '';
   const { sprite: img } = usePokemonData(species);
   const nickname = mon.nickname || species || '???';
@@ -83,7 +88,7 @@ function BattleOpponent({ mon }) {
   const hp = mon.currentHP ?? mon.current_hp ?? 0;
   const maxHp = mon.maxHP ?? mon.max_hp ?? 0;
   const types = mon.types || [];
-  const moveNames = mon.moveNames || [];
+  const rawMoves = mon.moveNames || [];
   const hpRatio = maxHp > 0 ? hp / maxHp : 0;
   const alive = hp > 0;
   const nature = mon.nature;
@@ -92,13 +97,29 @@ function BattleOpponent({ mon }) {
   const hasItem = heldItem && heldItem !== 'None';
   const statusRaw = mon.status;
   const statusInfo = statusRaw && statusRaw !== 'Healthy' ? STATUS_META[statusRaw] : null;
+  const moveData = useMoveData(rawMoves);
+
+  const moveSlots = [];
+  for (let i = 0; i < 4; i++) {
+    moveSlots.push(rawMoves[i] || null);
+  }
+
+  const isBench = !isActive;
+  const cls = [
+    'bc-opponent',
+    !alive && 'bc-dead',
+    isBench && 'bc-bench',
+  ].filter(Boolean).join(' ');
 
   return (
-    <div className={`bc-opponent ${alive ? '' : 'bc-dead'}`}>
+    <div className={cls}>
       <div className="bc-header" style={{ background: typeGradient(types) }}>
         <div className="bc-level-block">
           <span className="bc-level-label">Lv</span>
           <span className="bc-level-num">{level}</span>
+        </div>
+        <div className="bc-header-meta">
+          {isActive && <span className="bc-active-tag">ACTIVE</span>}
         </div>
         <div className="bc-sprite-anchor">
           {img ? (
@@ -147,14 +168,51 @@ function BattleOpponent({ mon }) {
           </div>
         )}
 
-        {moveNames.length > 0 && (
+        {isActive && (
           <div className="bc-moves">
-            {moveNames.filter(Boolean).map((name, i) => (
-              <span key={i} className="bc-move">{name}</span>
+            {moveSlots.map((name, i) => (
+              <MoveCell key={i} name={name} data={name ? moveData.get(name) : undefined} />
             ))}
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function MoveCell({ name, data }) {
+  if (!name) return <div className="bc-move bc-move-empty" />;
+
+  if (data === undefined) {
+    return (
+      <div className="bc-move" title={name}>
+        <span className="bc-move-name">{name}</span>
+        <span className="bc-move-meta bc-move-loading">&hellip;</span>
+      </div>
+    );
+  }
+
+  if (data === null) {
+    return (
+      <div className="bc-move" title="Custom move data not available">
+        <span className="bc-move-name">{name}</span>
+        <span className="bc-move-meta bc-move-custom">Custom</span>
+      </div>
+    );
+  }
+
+  const typeColor = TYPE_COLORS[data.type?.charAt(0).toUpperCase() + data.type?.slice(1)] || '#666';
+  const powerLabel = data.power != null ? data.power : '—';
+  const clsLabel = DAMAGE_CLASS_LABEL[data.damageClass] || '';
+
+  return (
+    <div className="bc-move" title={data.description || name}>
+      <span className="bc-move-name">{name}</span>
+      <span className="bc-move-meta">
+        <span className="bc-move-type-dot" style={{ background: typeColor }} />
+        <span className="bc-move-power">{powerLabel}</span>
+        {clsLabel && <span className="bc-move-cls">{clsLabel}</span>}
+      </span>
     </div>
   );
 }

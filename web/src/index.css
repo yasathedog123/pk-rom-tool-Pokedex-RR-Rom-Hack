@@ -237,7 +237,7 @@ button:active { transform:scale(0.97); }
   padding-right: 4px;
 }
 .multi-links-section { }
-.multi-events-section { margin-top: 16px; max-width:340px; }
+.multi-events-section { margin-top: 16px; }
 .party-grids-center { justify-content:center; }
 
 /* ---- Party Grids ---- */
@@ -585,7 +585,7 @@ button:active { transform:scale(0.97); }
   to   { opacity:0; transform:translateX(-24px); }
 }
 .bc-wrap {
-  flex-shrink:0; width:260px;
+  flex-shrink:0; width:320px;
 }
 .bc-enter { animation:battleSlideIn .3s ease-out both; }
 .bc-exit  { animation:battleSlideOut .25s ease-in both; }
@@ -595,18 +595,29 @@ button:active { transform:scale(0.97); }
   border:1px solid var(--glass-border);
   border-radius:var(--radius);
   overflow:hidden;
-  transition:border-color .2s, box-shadow .2s;
+  transition:border-color .2s, box-shadow .2s, opacity .3s;
   margin-bottom:8px;
 }
 .bc-opponent:hover { border-color:rgba(255,255,255,0.14); box-shadow:0 0 20px rgba(239,68,68,0.08); }
 .bc-dead { opacity:.45; filter:saturate(0.2); }
+
+.bc-bench {
+  opacity:.7;
+}
+.bc-bench .bc-header { min-height:36px; padding:6px 10px 8px; }
+.bc-bench .bc-sprite { width:56px; height:56px; }
+.bc-bench .bc-sprite-fb { width:56px; height:56px; font-size:14px; }
+.bc-bench .bc-sprite-anchor { top:-4px; right:2px; }
+.bc-bench .bc-level-num { font-size:16px; }
+.bc-bench .bc-nickname { font-size:12px; }
+.bc-bench .bc-details { padding:6px 10px 6px; }
 
 .bc-header {
   position:relative;
   padding:10px 12px 14px;
   border-radius:var(--radius) var(--radius) 0 0;
   display:flex; align-items:flex-end;
-  min-height:52px;
+  min-height:60px;
 }
 .bc-level-block { display:flex; flex-direction:column; z-index:1; }
 .bc-level-label {
@@ -614,8 +625,17 @@ button:active { transform:scale(0.97); }
   letter-spacing:.5px; color:rgba(255,255,255,0.6); line-height:1;
 }
 .bc-level-num {
-  font-size:22px; font-weight:800; line-height:1;
+  font-size:26px; font-weight:800; line-height:1;
   color:#fff; text-shadow:0 1px 4px rgba(0,0,0,0.3);
+}
+.bc-header-meta {
+  flex:1; display:flex; align-items:flex-end; justify-content:flex-start;
+  padding-left:8px; z-index:1;
+}
+.bc-active-tag {
+  font-size:7px; font-weight:700; text-transform:uppercase;
+  letter-spacing:.4px; padding:2px 7px; border-radius:4px;
+  background:rgba(34,197,94,0.2); color:#86efac;
 }
 
 .bc-sprite-anchor {
@@ -623,22 +643,22 @@ button:active { transform:scale(0.97); }
   z-index:2; pointer-events:none;
 }
 .bc-sprite {
-  width:100px; height:100px;
+  width:120px; height:120px;
   image-rendering:pixelated; object-fit:contain;
   filter:drop-shadow(0 2px 6px rgba(0,0,0,0.3));
   animation:breathe 3s ease-in-out infinite;
 }
 .bc-sprite-fb {
-  width:100px; height:100px;
+  width:120px; height:120px;
   display:flex; align-items:center; justify-content:center;
-  font-weight:700; font-size:22px; color:rgba(255,255,255,0.2);
+  font-weight:700; font-size:24px; color:rgba(255,255,255,0.2);
 }
 .bc-dead .bc-sprite { filter:grayscale(1) brightness(0.4); animation:none; }
 
 .bc-details { padding:10px 12px 10px; }
 .bc-name-row { display:flex; align-items:center; gap:4px; }
 .bc-nickname {
-  font-size:14px; font-weight:700; line-height:1.2;
+  font-size:16px; font-weight:700; line-height:1.2;
   overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
 }
 .bc-species {
@@ -678,10 +698,34 @@ button:active { transform:scale(0.97); }
   gap:3px; margin-top:8px;
 }
 .bc-move {
-  font-size:9px; font-weight:600; text-align:center;
-  padding:3px 4px; border-radius:5px;
+  height:48px;
+  display:flex; flex-direction:column;
+  justify-content:center; align-items:center;
+  padding:4px 6px; border-radius:5px;
   background:rgba(255,255,255,0.05); border:1px solid var(--glass-border);
-  color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  overflow:hidden;
+}
+.bc-move-empty {
+  visibility:hidden;
+}
+.bc-move-name {
+  font-size:9px; font-weight:600; color:var(--text);
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  max-width:100%; text-align:center;
+}
+.bc-move-meta {
+  display:flex; align-items:center; gap:3px;
+  margin-top:2px; font-size:8px; font-weight:500; color:var(--text-muted);
+}
+.bc-move-loading { font-style:italic; }
+.bc-move-custom { font-style:italic; color:rgba(255,255,255,0.25); }
+.bc-move-type-dot {
+  width:6px; height:6px; border-radius:50%; flex-shrink:0;
+}
+.bc-move-power { font-weight:700; }
+.bc-move-cls {
+  font-size:7px; font-weight:600; text-transform:uppercase;
+  letter-spacing:.2px; opacity:.6;
 }
 
 /* ---- Encounter Table ---- */

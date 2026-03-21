@@ -10,22 +10,39 @@ export default function useLocalTracker(localUrl) {
   const [enemyParty, setEnemyParty] = useState([]);
   const intervalRef = useRef(null);
   const detailRef = useRef(null);
+  const enemyRef = useRef(null);
+  const inBattleRef = useRef(false);
 
   const poll = useCallback(async () => {
     if (!localUrl) return;
     try {
-      const [s, sl, ep] = await Promise.all([
+      const [s, sl] = await Promise.all([
         fetchLocalStatus(localUrl),
         fetchLocalSoulLink(localUrl),
-        fetchLocalEnemy(localUrl).catch(() => []),
       ]);
       setStatus(s);
       setSoulLink(sl);
-      setEnemyParty(Array.isArray(ep) ? ep : []);
       setConnected(true);
     } catch {
       setConnected(false);
     }
+  }, [localUrl]);
+
+  const pollEnemy = useCallback(async () => {
+    if (!localUrl) return;
+    try {
+      const ep = await fetchLocalEnemy(localUrl);
+      const arr = Array.isArray(ep) ? ep : [];
+      setEnemyParty(arr);
+
+      const nowInBattle = arr.length > 0;
+      if (nowInBattle !== inBattleRef.current) {
+        inBattleRef.current = nowInBattle;
+        clearInterval(detailRef.current);
+        detailRef.current = setInterval(pollDetailsRef.current, nowInBattle ? 1000 : 5000);
+        pollDetailsRef.current();
+      }
+    } catch { /* keep previous */ }
   }, [localUrl]);
 
   const pollDetails = useCallback(async () => {
@@ -42,16 +59,22 @@ export default function useLocalTracker(localUrl) {
     }
   }, [localUrl]);
 
+  const pollDetailsRef = useRef(pollDetails);
+  pollDetailsRef.current = pollDetails;
+
   useEffect(() => {
     poll();
     pollDetails();
+    pollEnemy();
     intervalRef.current = setInterval(poll, 1500);
     detailRef.current = setInterval(pollDetails, 5000);
+    enemyRef.current = setInterval(pollEnemy, 500);
     return () => {
       clearInterval(intervalRef.current);
       clearInterval(detailRef.current);
+      clearInterval(enemyRef.current);
     };
-  }, [poll, pollDetails]);
+  }, [poll, pollDetails, pollEnemy]);
 
   return { connected, status, soulLink, party, trainerInfo, enemyParty, refresh: poll };
 }
