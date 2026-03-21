@@ -114,22 +114,38 @@ local function findPattern(pattern, romSize)
     return nil
 end
 
--- Scan ROM for 4-byte pointer to a given absolute ROM address
+-- Scan a region of ROM for 4-byte pointer to a given absolute ROM address.
+-- Searches near the string first (±2MB), then widens if needed.
 local function findPointers(targetAbsAddr, romSize)
     local b1 = targetAbsAddr & 0xFF
     local b2 = (targetAbsAddr >> 8) & 0xFF
     local b3 = (targetAbsAddr >> 16) & 0xFF
     local b4 = (targetAbsAddr >> 24) & 0xFF
     local results = {}
-    for addr = 0, romSize - 4 do
-        if memory.read_u8(addr, "ROM") == b1 and
-           memory.read_u8(addr + 1, "ROM") == b2 and
-           memory.read_u8(addr + 2, "ROM") == b3 and
-           memory.read_u8(addr + 3, "ROM") == b4 then
-            results[#results + 1] = addr
-        end
-        if addr % 0x10000 == 0 and emu and emu.frameadvance then
-            emu.frameadvance()
+    local targetROMOffset = targetAbsAddr - 0x08000000
+
+    -- Search in expanding rings: ±2MB around string, then full ROM
+    local ranges = {
+        { math.max(0, targetROMOffset - 0x200000), math.min(romSize - 4, targetROMOffset + 0x200000) },
+        { 0, romSize - 4 },
+    }
+
+    for _, range in ipairs(ranges) do
+        if #results > 0 then break end
+        local lo, hi = range[1], range[2]
+        -- Align to 4-byte boundary (pointers are word-aligned)
+        lo = lo - (lo % 4)
+        console.log(string.format("[LocationLookup] Pointer search 0x%06X-0x%06X...", lo, hi))
+        for addr = lo, hi, 4 do
+            if memory.read_u8(addr, "ROM") == b1 and
+               memory.read_u8(addr + 1, "ROM") == b2 and
+               memory.read_u8(addr + 2, "ROM") == b3 and
+               memory.read_u8(addr + 3, "ROM") == b4 then
+                results[#results + 1] = addr
+            end
+            if addr % 0x40000 == 0 and emu and emu.frameadvance then
+                emu.frameadvance()
+            end
         end
     end
     return results
