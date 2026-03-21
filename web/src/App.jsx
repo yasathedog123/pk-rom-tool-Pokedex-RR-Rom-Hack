@@ -1,10 +1,11 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import StatusBar from './components/StatusBar';
 import SettingsModal from './components/SettingsModal';
 import PartyGrid from './components/PartyGrid';
 import SoulLinkTimeline from './components/SoulLinkTimeline';
 import RouteLinkList, { SoloRouteLinkList } from './components/RouteLinkList';
 import EventFeed from './components/EventFeed';
+import BattleCard from './components/BattleCard';
 import RouteManager from './components/RouteManager';
 import TrainerSpritePicker, { getTrainerSpriteUrl } from './components/TrainerSpritePicker';
 import useLocalTracker from './hooks/useLocalTracker';
@@ -80,7 +81,7 @@ export default function App() {
   const [spritePickerOpen, setSpritePickerOpen] = useState(false);
   const [selectedTrainerId, setSelectedTrainerId] = useState(null);
 
-  const { connected: localOk, status, soulLink, party: localParty, trainerInfo } = useLocalTracker(localUrl);
+  const { connected: localOk, status, soulLink, party: localParty, trainerInfo, enemyParty } = useLocalTracker(localUrl);
   const room = useRoom(syncUrl, playerName, status, soulLink, localParty);
 
   const localPlayerId = getPlayerId();
@@ -101,6 +102,32 @@ export default function App() {
 
   const soloRoutes = soulLink?.routes || [];
   const soloEvents = soulLink?.recentEvents || [];
+  const inBattle = enemyParty.length > 0;
+
+  const prevInBattleRef = useRef(false);
+  const [battleEvents, setBattleEvents] = useState([]);
+
+  useEffect(() => {
+    const wasInBattle = prevInBattleRef.current;
+    prevInBattleRef.current = inBattle;
+
+    if (inBattle && !wasInBattle) {
+      const lead = enemyParty[0];
+      setBattleEvents(prev => [...prev, {
+        id: `battle_start_${Date.now()}`,
+        type: 'battle_start',
+        pokemon: { species: lead?.species, level: lead?.level },
+        timestamp: Date.now(),
+      }]);
+    } else if (!inBattle && wasInBattle) {
+      setBattleEvents(prev => [...prev, {
+        id: `battle_end_${Date.now()}`,
+        type: 'battle_end',
+        timestamp: Date.now(),
+      }]);
+    }
+  }, [inBattle]);
+
   const roomPairs  = room.roomState?.pairs || [];
   const roomEvents = room.roomState?.events || [];
   const roomPlayers = room.roomState?.players || [];
@@ -261,25 +288,38 @@ export default function App() {
           </div>
         )}
 
-        {localOk && isSolo && (
-          <div className="layout-solo">
-            <section className="solo-party">
-              <h2 className="section-title">Party</h2>
-              <div className="party-grids">
-                {trainerParties.map(t => (
-                  <PartyGrid key={t.playerId} trainerName={t.name} party={t.party} routeMap={soloRouteMap} trainerSprite={t.spriteUrl} />
-                ))}
-              </div>
-            </section>
-            <section className="solo-encounters">
-              {filteredSoloRoutes.length > 0 && <SoloRouteLinkList routes={filteredSoloRoutes} gameName={gameName} />}
-              <div className="solo-events">
-                <h2 className="section-title">Events</h2>
-                <EventFeed events={soloEvents} />
-              </div>
-            </section>
-          </div>
-        )}
+        {localOk && isSolo && (() => {
+          const timeline = getTimeline(gameName);
+          return (
+            <div className="layout-solo">
+              <section className="solo-party">
+                <h2 className="section-title">Party</h2>
+                <div className="party-grids">
+                  {trainerParties.map(t => (
+                    <PartyGrid key={t.playerId} trainerName={t.name} party={t.party} routeMap={soloRouteMap} trainerSprite={t.spriteUrl} />
+                  ))}
+                </div>
+              </section>
+              <section className="solo-encounters">
+                {filteredSoloRoutes.length > 0 && <SoloRouteLinkList routes={filteredSoloRoutes} gameName={gameName} />}
+                <div className="solo-events">
+                  <h2 className="section-title">Events</h2>
+                  <EventFeed events={[...soloEvents, ...battleEvents]} />
+                </div>
+              </section>
+              <BattleCard enemyParty={enemyParty} />
+              {timeline && (
+                <aside className="solo-timeline">
+                  <SoulLinkTimeline
+                    timeline={timeline}
+                    encounters={filteredSoloRoutes}
+                    gameName={gameName}
+                  />
+                </aside>
+              )}
+            </div>
+          );
+        })()}
 
         {(localOk || isMockMode) && isMulti && (() => {
           const timeline = getTimeline(gameName);
@@ -300,6 +340,7 @@ export default function App() {
                   <EventFeed events={finalRoomEvents} />
                 </div>
               </aside>
+              <BattleCard enemyParty={enemyParty} />
               <section className="multi-party-col">
                 <PartyGrid
                   trainerName={activeTrainer.name}
@@ -336,9 +377,10 @@ export default function App() {
               {roomLinks.length > 0 && <RouteLinkList links={roomLinks} players={roomPlayers} />}
               <div className="solo-events">
                 <h2 className="section-title">Room Events</h2>
-                <EventFeed events={roomEvents} />
+                <EventFeed events={[...roomEvents, ...battleEvents]} />
               </div>
             </section>
+            <BattleCard enemyParty={enemyParty} />
           </div>
         )}
       </main>

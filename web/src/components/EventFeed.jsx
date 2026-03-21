@@ -23,10 +23,33 @@ function FeedItem({ event }) {
 
   let icon = '';
   let cls = '';
-  if (type === 'catch')      { icon = '+'; cls = 'feed-catch'; }
-  else if (type === 'faint') { icon = '×'; cls = 'feed-faint'; }
-  else if (type === 'gift')  { icon = '★'; cls = 'feed-catch'; }
-  else                       { icon = '·'; cls = ''; }
+  if (type === 'catch')             { icon = '+'; cls = 'feed-catch'; }
+  else if (type === 'faint')        { icon = '×'; cls = 'feed-faint'; }
+  else if (type === 'gift')         { icon = '★'; cls = 'feed-catch'; }
+  else if (type === 'battle_start') { icon = '⚔'; cls = 'feed-battle'; }
+  else if (type === 'battle_end')   { icon = '✓'; cls = 'feed-battle-end'; }
+  else                              { icon = '·'; cls = ''; }
+
+  if (type === 'battle_start') {
+    return (
+      <div className={`feed-item ${cls}`}>
+        <span className="feed-icon">{icon}</span>
+        <div className="feed-body">
+          Battle started{species ? <> vs <strong>{species}</strong></> : null}
+          {mon.level ? <span className="feed-loc"> Lv.{mon.level}</span> : null}
+        </div>
+      </div>
+    );
+  }
+
+  if (type === 'battle_end') {
+    return (
+      <div className={`feed-item ${cls}`}>
+        <span className="feed-icon">{icon}</span>
+        <div className="feed-body">Battle ended</div>
+      </div>
+    );
+  }
 
   return (
     <div className={`feed-item ${cls}`}>

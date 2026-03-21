@@ -40,6 +40,9 @@ export async function fetchLocalTrainer(base) {
 export async function fetchLocalSoulLink(base) {
   return json(`${base}/soullink/state`);
 }
+export async function fetchLocalEnemy(base) {
+  return json(`${base}/enemy`);
+}
 export async function fetchLocalEvents(base) {
   return json(`${base}/soullink/events`);
 }

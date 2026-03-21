@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { fetchLocalStatus, fetchLocalSoulLink, fetchLocalParty, fetchLocalTrainer } from '../utils/api';
+import { fetchLocalStatus, fetchLocalSoulLink, fetchLocalParty, fetchLocalTrainer, fetchLocalEnemy } from '../utils/api';
 
 export default function useLocalTracker(localUrl) {
   const [connected, setConnected] = useState(false);
@@ -7,18 +7,21 @@ export default function useLocalTracker(localUrl) {
   const [soulLink, setSoulLink]   = useState(null);
   const [party, setParty]         = useState([]);
   const [trainerInfo, setTrainerInfo] = useState(null);
+  const [enemyParty, setEnemyParty] = useState([]);
   const intervalRef = useRef(null);
   const detailRef = useRef(null);
 
   const poll = useCallback(async () => {
     if (!localUrl) return;
     try {
-      const [s, sl] = await Promise.all([
+      const [s, sl, ep] = await Promise.all([
         fetchLocalStatus(localUrl),
         fetchLocalSoulLink(localUrl),
+        fetchLocalEnemy(localUrl).catch(() => []),
       ]);
       setStatus(s);
       setSoulLink(sl);
+      setEnemyParty(Array.isArray(ep) ? ep : []);
       setConnected(true);
     } catch {
       setConnected(false);
@@ -50,5 +53,5 @@ export default function useLocalTracker(localUrl) {
     };
   }, [poll, pollDetails]);
 
-  return { connected, status, soulLink, party, trainerInfo, refresh: poll };
+  return { connected, status, soulLink, party, trainerInfo, enemyParty, refresh: poll };
 }
