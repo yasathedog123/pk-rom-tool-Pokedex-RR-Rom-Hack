@@ -352,19 +352,18 @@ export default function App() {
                   inBattle={inBattle}
                 />
               </section>
-              <aside className="multi-right-col">
-                <div className={`multi-timeline-pane ${inBattle ? 'pane-out' : 'pane-in'}`}>
-                  <SoulLinkTimeline
-                    timeline={timeline}
-                    encounters={isMockMode ? [] : filteredSoloRoutes}
-                    gameName={gameName}
-                  />
-                </div>
-                {inBattle && (
-                  <div className="multi-battle-pane pane-in">
-                    <BattleCard enemyParty={enemyParty} />
-                  </div>
-                )}
+              <aside className="multi-battle-col">
+                {inBattle
+                  ? <BattleCard enemyParty={enemyParty} />
+                  : <div className="multi-battle-placeholder"><span>No active battle</span></div>
+                }
+              </aside>
+              <aside className="multi-timeline-col">
+                <SoulLinkTimeline
+                  timeline={timeline}
+                  encounters={isMockMode ? [] : filteredSoloRoutes}
+                  gameName={gameName}
+                />
               </aside>
             </div>
           );

@@ -212,7 +212,7 @@ button:active { transform:scale(0.97); }
   padding-right:4px;
 }
 
-/* ---- Multi Layout (3-column: encounters | party | right) ---- */
+/* ---- Multi Layout (4-column: encounters | party | battle | timeline) ---- */
 .layout-multi-new {
   display: flex;
   gap: 20px;
@@ -220,42 +220,44 @@ button:active { transform:scale(0.97); }
   justify-content: center;
 }
 .multi-encounters {
-  width: 340px;
-  flex-shrink: 0;
+  flex: 1;
+  min-width: 300px;
   max-height: calc(100vh - 80px);
   overflow-y: auto;
   padding-right: 4px;
-  display: flex;
-  flex-direction: column;
 }
 .multi-party-col {
   flex-shrink: 0;
 }
-.multi-right-col {
+.multi-battle-col {
   width: 320px;
+  flex-shrink: 0;
+  max-height: calc(100vh - 80px);
+  overflow-y: auto;
+}
+.multi-battle-placeholder {
+  width: 100%;
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--glass-bg);
+  border: 1px dashed var(--glass-border);
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  font-size: 12px;
+  font-style: italic;
+}
+.multi-timeline-col {
+  width: 300px;
   min-width: 260px;
   flex-shrink: 0;
   max-height: calc(100vh - 80px);
   overflow-y: auto;
   padding-right: 4px;
-  position: relative;
 }
 .multi-links-section { }
 .multi-events-section { margin-top: 16px; }
-
-/* Pane swap animations (timeline <-> battle card) */
-@keyframes paneSlideIn {
-  from { opacity: 0; transform: translateX(30px); }
-  to   { opacity: 1; transform: translateX(0); }
-}
-@keyframes paneSlideOut {
-  from { opacity: 1; transform: translateX(0); }
-  to   { opacity: 0; transform: translateX(30px); }
-}
-.multi-timeline-pane,
-.multi-battle-pane { width: 100%; }
-.pane-in  { animation: paneSlideIn  .3s ease-out both; }
-.pane-out { animation: paneSlideOut .25s ease-in both; pointer-events: none; position: absolute; }
 .party-grids-center { justify-content:center; }
 
 /* ---- Party Grids ---- */
@@ -379,15 +381,19 @@ button:active { transform:scale(0.97); }
 }
 .pc:hover { border-color:rgba(255,255,255,0.14); box-shadow:0 0 20px rgba(59,130,246,0.06); }
 
-/* Active battler glow (player) */
+/* Active battler indicator (player) */
 .pc-active-battler {
-  box-shadow: 0 0 12px 3px rgba(59,130,246,0.5), 0 0 24px 6px rgba(59,130,246,0.2);
-  border-color: rgba(59,130,246,0.6);
-  animation: activeGlowBlue 2s ease-in-out infinite alternate;
+  border-color: var(--gold);
+  position: relative;
 }
-@keyframes activeGlowBlue {
-  from { box-shadow: 0 0 12px 3px rgba(59,130,246,0.5), 0 0 24px 6px rgba(59,130,246,0.2); }
-  to   { box-shadow: 0 0 16px 5px rgba(59,130,246,0.7), 0 0 32px 10px rgba(59,130,246,0.3); }
+.pc-active-battler::before {
+  content: 'ACTIVE';
+  position: absolute;
+  top: 6px; right: 6px;
+  font-size: 7px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .4px; padding: 2px 7px; border-radius: 4px;
+  background: rgba(245,158,11,0.25); color: var(--gold);
+  z-index: 3;
 }
 
 .pc-dead { opacity:.55; filter:saturate(0.2); }
@@ -629,15 +635,9 @@ button:active { transform:scale(0.97); }
 }
 .bc-opponent:hover { border-color:rgba(255,255,255,0.14); box-shadow:0 0 20px rgba(239,68,68,0.08); }
 
-/* Active opponent glow (red) */
+/* Active opponent indicator */
 .bc-opponent:not(.bc-bench):not(.bc-dead) {
-  box-shadow: 0 0 12px 3px rgba(239,68,68,0.45), 0 0 24px 6px rgba(239,68,68,0.15);
-  border-color: rgba(239,68,68,0.5);
-  animation: activeGlowRed 2s ease-in-out infinite alternate;
-}
-@keyframes activeGlowRed {
-  from { box-shadow: 0 0 12px 3px rgba(239,68,68,0.45), 0 0 24px 6px rgba(239,68,68,0.15); }
-  to   { box-shadow: 0 0 16px 5px rgba(239,68,68,0.6), 0 0 32px 10px rgba(239,68,68,0.25); }
+  border-color: var(--gold);
 }
 
 .bc-dead { opacity:.45; filter:saturate(0.2); }
@@ -1328,11 +1328,14 @@ button:active { transform:scale(0.97); }
     width:100%; min-width:0;
     max-height:none; overflow:visible;
   }
-  .multi-right-col {
+  .multi-battle-col {
     width:100%; min-width:0;
-    max-height:400px; position:static;
+    max-height:none;
   }
-  .pane-out { position:static; }
+  .multi-timeline-col {
+    width:100%; min-width:0;
+    max-height:400px;
+  }
   .pg-accordion { flex-wrap:wrap; }
 }
 @media (max-width: 900px) {
