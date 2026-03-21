@@ -157,10 +157,10 @@ local function findPointers(targetAbsAddr, romSize)
     return results
 end
 
--- Cross-verify entries: given two confirmed mapsec->name pairs
+-- Cross-verify with EXACT confirmed in-game data
 local VERIFY_PAIRS = {
-    { mapsec = 89,  keyword = "VIRIDIAN" },
-    { mapsec = 101, keyword = "ROUTE" },
+    { mapsec = 89,  exact = "Viridian City",  alt = "VIRIDIAN CITY" },
+    { mapsec = 101, exact = "Route 1",        alt = "ROUTE 1" },
 }
 
 local function tryFindTable(stringROMAddr, romSize, anchorMapsec)
@@ -176,7 +176,7 @@ local function tryFindTable(stringROMAddr, romSize, anchorMapsec)
             for nameOff = 0, math.min(stride - 4, 12), 4 do
                 local tableBase = ptrOffset - nameOff - (anchorMapsec * stride)
                 if tableBase >= 0 and tableBase + 255 * stride < romSize then
-                    -- Cross-verify against other confirmed entries
+                    -- Cross-verify against other confirmed entries (exact match)
                     local allMatch = true
                     for _, vp in ipairs(VERIFY_PAIRS) do
                         if vp.mapsec ~= anchorMapsec then
@@ -185,7 +185,7 @@ local function tryFindTable(stringROMAddr, romSize, anchorMapsec)
                                 local ptr = memory.read_u32_le(checkAddr, "ROM")
                                 if isROMPointer(ptr) then
                                     local name = readGBAString(ptr & 0x1FFFFFF)
-                                    if not name:upper():find(vp.keyword) then
+                                    if name ~= vp.exact and name ~= vp.alt then
                                         allMatch = false
                                     end
                                 else
