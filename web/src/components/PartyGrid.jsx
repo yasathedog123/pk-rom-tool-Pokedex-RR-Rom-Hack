@@ -1,7 +1,7 @@
 import { useRef, useLayoutEffect, useCallback, useState } from 'react';
 import PartyCard, { EmptySlot } from './PartyCard';
 
-export default function PartyGrid({ trainerName, party, routeMap, trainerSprite, allTrainers, onSelectTrainer, activePlayerId }) {
+export default function PartyGrid({ trainerName, party, routeMap, trainerSprite, allTrainers, onSelectTrainer, activePlayerId, inBattle }) {
   const slots = [];
   for (let i = 0; i < 6; i++) {
     slots.push(party[i] || null);
@@ -114,6 +114,7 @@ export default function PartyGrid({ trainerName, party, routeMap, trainerSprite,
               <PartyCard
                 mon={mon}
                 routeName={routeMap?.[mon.personality]}
+                isActiveBattler={inBattle && i === 0}
               />
             </div>
           ) : (

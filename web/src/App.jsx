@@ -340,7 +340,6 @@ export default function App() {
                   <EventFeed events={finalRoomEvents} />
                 </div>
               </aside>
-              <BattleCard enemyParty={enemyParty} />
               <section className="multi-party-col">
                 <PartyGrid
                   trainerName={activeTrainer.name}
@@ -350,14 +349,22 @@ export default function App() {
                   allTrainers={finalTrainerParties}
                   onSelectTrainer={setSelectedTrainerId}
                   activePlayerId={activeId}
+                  inBattle={inBattle}
                 />
               </section>
-              <aside className="multi-timeline">
-                <SoulLinkTimeline
-                  timeline={timeline}
-                  encounters={isMockMode ? [] : filteredSoloRoutes}
-                  gameName={gameName}
-                />
+              <aside className="multi-right-col">
+                <div className={`multi-timeline-pane ${inBattle ? 'pane-out' : 'pane-in'}`}>
+                  <SoulLinkTimeline
+                    timeline={timeline}
+                    encounters={isMockMode ? [] : filteredSoloRoutes}
+                    gameName={gameName}
+                  />
+                </div>
+                {inBattle && (
+                  <div className="multi-battle-pane pane-in">
+                    <BattleCard enemyParty={enemyParty} />
+                  </div>
+                )}
               </aside>
             </div>
           );

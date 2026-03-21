@@ -34,7 +34,7 @@ const STATUS_META = {
   Frozen:    { label: 'FRZ', cls: 'pc-status-frz' },
 };
 
-export default function PartyCard({ mon, routeName }) {
+export default function PartyCard({ mon, routeName, isActiveBattler }) {
   const species    = mon.species_name || mon.species || '';
   const { sprite: img, baseStats } = usePokemonData(species);
   const nickname   = mon.nickname || species || '???';
@@ -55,7 +55,7 @@ export default function PartyCard({ mon, routeName }) {
   const evs        = mon.evs || mon.EVs || null;
 
   return (
-    <div className={`pc ${alive ? '' : 'pc-dead'}`}>
+    <div className={`pc ${alive ? '' : 'pc-dead'} ${isActiveBattler ? 'pc-active-battler' : ''}`}>
       <div className="pc-header" style={{ background: typeGradient(types) }}>
         <div className="pc-level-block">
           <span className="pc-level-label">Level</span>
