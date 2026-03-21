@@ -43,6 +43,18 @@ const HELD_ITEMS = [
 
 const TRAINER_NAMES = ['Ash', 'Misty', 'Brock', 'Gary', 'Cynthia', 'Steven', 'Lance', 'Red'];
 
+const SHOWDOWN_TRAINERS = 'https://play.pokemonshowdown.com/sprites/trainers';
+const MOCK_SPRITES = [
+  `${SHOWDOWN_TRAINERS}/leaf.png`,
+  `${SHOWDOWN_TRAINERS}/ethan.png`,
+  `${SHOWDOWN_TRAINERS}/brendan.png`,
+  `${SHOWDOWN_TRAINERS}/dawn.png`,
+  `${SHOWDOWN_TRAINERS}/hilbert.png`,
+  `${SHOWDOWN_TRAINERS}/hilda.png`,
+  `${SHOWDOWN_TRAINERS}/serena.png`,
+  `${SHOWDOWN_TRAINERS}/calem.png`,
+];
+
 const ROUTE_NAMES = [
   'Route 1', 'Route 2', 'Route 3', 'Route 4', 'Route 5',
   'Viridian Forest', 'Mt. Moon', 'Rock Tunnel', 'Safari Zone',
@@ -174,7 +186,7 @@ export function generateMockData(localPlayer) {
       name: availableNames[i] || `Player ${i + 2}`,
       playerId: pid,
       party: generateMockParty(),
-      spriteUrl: null,
+      spriteUrl: MOCK_SPRITES[i % MOCK_SPRITES.length],
       money: rand(500, 99999),
       coins: rand(0, 5000),
     });

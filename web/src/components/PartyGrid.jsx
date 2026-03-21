@@ -1,11 +1,7 @@
 import { useRef, useLayoutEffect, useCallback, useState } from 'react';
 import PartyCard, { EmptySlot } from './PartyCard';
 
-function formatMoney(n) {
-  return n != null ? `$${Number(n).toLocaleString()}` : null;
-}
-
-export default function PartyGrid({ trainerName, party, routeMap, trainerSprite, money, coins, allTrainers, onSelectTrainer, activePlayerId }) {
+export default function PartyGrid({ trainerName, party, routeMap, trainerSprite, allTrainers, onSelectTrainer, activePlayerId }) {
   const slots = [];
   for (let i = 0; i < 6; i++) {
     slots.push(party[i] || null);
@@ -81,31 +77,22 @@ export default function PartyGrid({ trainerName, party, routeMap, trainerSprite,
   return (
     <div className="pg glass-card pg-group">
       {hasCarousel ? (
-        <div className="pg-carousel-banner">
-          <div className="pg-carousel-tabs">
-            {allTrainers.map(t => (
+        <div className="pg-accordion">
+          {allTrainers.map(t => {
+            const isActive = t.playerId === activePlayerId;
+            return (
               <button
                 key={t.playerId}
-                className={`pg-tab ${t.playerId === activePlayerId ? 'pg-tab-active' : ''}`}
+                className={`pg-acc-tab ${isActive ? 'pg-acc-active' : ''}`}
                 onClick={() => handleSelect(t.playerId)}
               >
                 {t.spriteUrl && (
-                  <img className="pg-tab-sprite" src={t.spriteUrl} alt="" />
+                  <img className="pg-acc-sprite" src={t.spriteUrl} alt="" />
                 )}
-                <span className="pg-tab-name">{t.name}</span>
+                <span className="pg-acc-name">{t.name}</span>
               </button>
-            ))}
-          </div>
-          <div className="pg-banner-details">
-            {trainerSprite && (
-              <img className="pg-banner-sprite" src={trainerSprite} alt="" />
-            )}
-            <div className="pg-banner-info">
-              <span className="pg-trainer-name">{trainerName}</span>
-              {money != null && <span className="pg-money">{formatMoney(money)}</span>}
-              {coins != null && coins > 0 && <span className="pg-coins">{Number(coins).toLocaleString()} coins</span>}
-            </div>
-          </div>
+            );
+          })}
         </div>
       ) : (
         <div className="pg-banner">
@@ -114,8 +101,6 @@ export default function PartyGrid({ trainerName, party, routeMap, trainerSprite,
           )}
           <div className="pg-banner-info">
             <span className="pg-trainer-name">{trainerName}</span>
-            {money != null && <span className="pg-money">{formatMoney(money)}</span>}
-            {coins != null && coins > 0 && <span className="pg-coins">{Number(coins).toLocaleString()} coins</span>}
           </div>
         </div>
       )}

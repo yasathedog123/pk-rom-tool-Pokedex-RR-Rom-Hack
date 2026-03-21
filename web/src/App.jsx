@@ -267,7 +267,7 @@ export default function App() {
               <h2 className="section-title">Party</h2>
               <div className="party-grids">
                 {trainerParties.map(t => (
-                  <PartyGrid key={t.playerId} trainerName={t.name} party={t.party} routeMap={soloRouteMap} trainerSprite={t.spriteUrl} money={t.money} coins={t.coins} />
+                  <PartyGrid key={t.playerId} trainerName={t.name} party={t.party} routeMap={soloRouteMap} trainerSprite={t.spriteUrl} />
                 ))}
               </div>
             </section>
@@ -306,20 +306,18 @@ export default function App() {
                   party={activeTrainer.party}
                   routeMap={finalRouteMap}
                   trainerSprite={activeTrainer.spriteUrl}
-                  money={activeTrainer.money}
-                  coins={activeTrainer.coins}
                   allTrainers={finalTrainerParties}
                   onSelectTrainer={setSelectedTrainerId}
                   activePlayerId={activeId}
                 />
-                <aside className="multi-timeline">
-                  <SoulLinkTimeline
-                    timeline={timeline}
-                    encounters={isMockMode ? [] : filteredSoloRoutes}
-                    gameName={gameName}
-                  />
-                </aside>
               </section>
+              <aside className="multi-timeline">
+                <SoulLinkTimeline
+                  timeline={timeline}
+                  encounters={isMockMode ? [] : filteredSoloRoutes}
+                  gameName={gameName}
+                />
+              </aside>
             </div>
           );
         })()}
@@ -330,7 +328,7 @@ export default function App() {
               <h2 className="section-title">Party</h2>
               <div className="party-grids">
                 {trainerParties.map(t => (
-                  <PartyGrid key={t.playerId} trainerName={t.name} party={t.party} routeMap={roomRouteMap} trainerSprite={t.spriteUrl} money={t.money} coins={t.coins} />
+                  <PartyGrid key={t.playerId} trainerName={t.name} party={t.party} routeMap={roomRouteMap} trainerSprite={t.spriteUrl} />
                 ))}
               </div>
             </section>

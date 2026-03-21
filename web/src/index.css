@@ -207,27 +207,27 @@ button:active { transform:scale(0.97); }
 .solo-encounters { flex:1; min-width:0; max-width:420px; }
 .solo-events { margin-top:16px; }
 
-/* ---- Multi Layout (2-column: encounters | party+timeline) ---- */
+/* ---- Multi Layout (3-column: encounters | party | timeline) ---- */
 .layout-multi-new {
   display: flex;
-  gap: 24px;
+  gap: 20px;
   align-items: flex-start;
 }
 .multi-encounters {
   flex: 1;
-  min-width: 280px;
+  min-width: 260px;
   max-height: calc(100vh - 80px);
   overflow-y: auto;
   padding-right: 4px;
 }
 .multi-party-col {
   flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
 }
 .multi-timeline {
-  max-height: 500px;
+  width: 300px;
+  min-width: 260px;
+  flex-shrink: 0;
+  max-height: calc(100vh - 80px);
   overflow-y: auto;
   padding-right: 4px;
 }
@@ -250,51 +250,53 @@ button:active { transform:scale(0.97); }
   border-radius:var(--radius);
 }
 
-/* ---- Trainer Carousel ---- */
-.pg-carousel-banner {
+/* ---- Trainer Accordion ---- */
+.pg-accordion {
+  display:flex; gap:4px;
   margin-bottom:12px;
 }
-.pg-carousel-tabs {
-  display:flex; gap:4px; margin-bottom:8px;
-  padding:4px; background:rgba(255,255,255,0.02);
+.pg-acc-tab {
+  display:flex; align-items:center; gap:8px;
+  padding:8px 10px;
+  border:1px solid var(--glass-border);
   border-radius:var(--radius-sm);
-  overflow-x:auto;
-}
-.pg-tab {
-  display:flex; align-items:center; gap:6px;
-  padding:6px 12px;
-  border:1px solid transparent;
-  border-radius:var(--radius-sm);
-  background:transparent;
+  background:rgba(255,255,255,0.02);
   color:var(--text-muted);
   cursor:pointer;
-  transition:all .2s;
+  transition:all .3s cubic-bezier(0.4, 0, 0.2, 1);
   white-space:nowrap;
-  font-family:inherit; font-size:11px; font-weight:600;
+  font-family:inherit; font-size:10px; font-weight:600;
   text-transform:uppercase; letter-spacing:.3px;
+  flex:0 0 auto;
+  overflow:hidden;
+  min-width:0;
 }
-.pg-tab:hover {
-  background:rgba(255,255,255,0.04);
+.pg-acc-tab:hover {
+  background:rgba(255,255,255,0.05);
+  border-color:rgba(255,255,255,0.12);
   color:var(--text);
 }
-.pg-tab-active {
-  background:rgba(59,130,246,0.1);
+.pg-acc-active {
+  flex:1 1 auto;
+  background:linear-gradient(135deg, rgba(59,130,246,0.1), rgba(99,102,241,0.05));
   border-color:var(--accent);
   color:var(--accent);
-}
-.pg-tab-sprite {
-  height:28px; image-rendering:pixelated; object-fit:contain;
-  filter:drop-shadow(0 1px 3px rgba(0,0,0,0.3));
-}
-.pg-tab-name { }
-
-.pg-banner-details {
-  display:flex; align-items:center; gap:14px;
+  font-size:13px; font-weight:800;
+  letter-spacing:.5px;
   padding:10px 14px;
-  background:linear-gradient(135deg, rgba(59,130,246,0.08), rgba(99,102,241,0.04));
-  border-left:3px solid var(--accent);
-  border-radius:var(--radius-sm);
-  min-height:60px;
+}
+.pg-acc-sprite {
+  image-rendering:pixelated; object-fit:contain;
+  filter:drop-shadow(0 1px 3px rgba(0,0,0,0.3));
+  transition:height .3s cubic-bezier(0.4, 0, 0.2, 1);
+  height:24px; flex-shrink:0;
+}
+.pg-acc-active .pg-acc-sprite {
+  height:48px;
+}
+.pg-acc-name {
+  overflow:hidden; text-overflow:ellipsis;
+  transition:font-size .3s;
 }
 
 /* ---- Trainer Banner ---- */
@@ -317,12 +319,6 @@ button:active { transform:scale(0.97); }
   font-size:15px; font-weight:800; text-transform:uppercase;
   letter-spacing:.6px; color:var(--accent);
   overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
-}
-.pg-money {
-  font-size:13px; font-weight:700; color:var(--text);
-}
-.pg-coins {
-  font-size:10px; font-weight:600; color:var(--gold);
 }
 
 /* ---- Party Grid Slide Animations ---- */
@@ -1131,8 +1127,10 @@ button:active { transform:scale(0.97); }
     max-height:none; overflow:visible;
   }
   .multi-timeline {
+    width:100%; min-width:0;
     max-height:400px;
   }
+  .pg-accordion { flex-wrap:wrap; }
 }
 @media (max-width: 900px) {
   .pg-grid { grid-template-columns:1fr; }
