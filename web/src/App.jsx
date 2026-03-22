@@ -2,8 +2,8 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import StatusBar from './components/StatusBar';
 import SettingsModal from './components/SettingsModal';
 import PartyGrid from './components/PartyGrid';
+import SoulLinkTimeline from './components/SoulLinkTimeline';
 import RouteLinkList, { SoloRouteLinkList } from './components/RouteLinkList';
-import EventFeed from './components/EventFeed';
 import EventToasts from './components/EventToasts';
 import BattleCard from './components/BattleCard';
 import RouteManager from './components/RouteManager';
@@ -11,6 +11,7 @@ import TrainerSpritePicker, { getTrainerSpriteUrl } from './components/TrainerSp
 import useLocalTracker from './hooks/useLocalTracker';
 import useRoom from './hooks/useRoom';
 import { getMockPlayerCount, generateMockData } from './utils/mockData';
+import { getTimeline } from './data/gameTimelines';
 import {
   getPlayerId, getPlayerName, setPlayerName as saveName,
   getLocalUrl, setLocalUrl as saveLocal,
@@ -307,6 +308,7 @@ export default function App() {
         })()}
 
         {(localOk || isMockMode) && isMulti && (() => {
+          const timeline = getTimeline(gameName);
           const activeId = selectedTrainerId || finalTrainerParties[0]?.playerId;
           const activeTrainer = finalTrainerParties.find(t => t.playerId === activeId) || finalTrainerParties[0];
           const isViewingLocal = activeId === localPlayerId;
@@ -324,6 +326,15 @@ export default function App() {
                   </div>
                 )}
               </aside>
+              <aside className={`multi-battle-col${!isViewingLocal ? ' multi-battle-disabled' : ''}`}>
+                <h3 className="section-title">Battle</h3>
+                {!isViewingLocal
+                  ? <div className="multi-battle-placeholder multi-battle-remote"><span>Battle data not available for remote players</span></div>
+                  : showBattle
+                    ? <BattleCard enemyParty={enemyParty} playerLeadTypes={leadPlayerTypes} />
+                    : <div className="multi-battle-placeholder"><span>No active battle</span></div>
+                }
+              </aside>
               <section className="multi-party-col">
                 <PartyGrid
                   trainerName={activeTrainer.name}
@@ -337,18 +348,12 @@ export default function App() {
                   opponentTypes={isViewingLocal ? leadOpponentTypes : []}
                 />
               </section>
-              <aside className={`multi-battle-col${!isViewingLocal ? ' multi-battle-disabled' : ''}`}>
-                <h3 className="section-title">Battle</h3>
-                {!isViewingLocal
-                  ? <div className="multi-battle-placeholder multi-battle-remote"><span>Battle data not available for remote players</span></div>
-                  : showBattle
-                    ? <BattleCard enemyParty={enemyParty} playerLeadTypes={leadPlayerTypes} />
-                    : <div className="multi-battle-placeholder"><span>No active battle</span></div>
-                }
-              </aside>
-              <aside className="multi-events-col">
-                <h3 className="section-title">{isMockMode ? 'Events (Mock)' : 'Events'}</h3>
-                <EventFeed events={[...finalRoomEvents, ...battleEvents]} />
+              <aside className="multi-timeline-col">
+                <SoulLinkTimeline
+                  timeline={timeline}
+                  encounters={isMockMode ? [] : filteredSoloRoutes}
+                  gameName={gameName}
+                />
               </aside>
             </div>
           );
