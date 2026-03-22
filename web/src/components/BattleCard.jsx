@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import usePokemonData from '../hooks/usePokemonData';
 import useMoveData from '../hooks/useMoveData';
 import TypeBadge from './TypeBadge';
+import MoveCard from './MoveCard';
 import { TYPE_COLORS } from '../utils/types';
 
 const SHOWDOWN_ITEMS = 'https://play.pokemonshowdown.com/sprites/itemicons';
@@ -31,12 +32,6 @@ const STATUS_META = {
   Paralyzed: { label: 'PAR', cls: 'pc-status-par' },
   Asleep:    { label: 'SLP', cls: 'pc-status-slp' },
   Frozen:    { label: 'FRZ', cls: 'pc-status-frz' },
-};
-
-const DAMAGE_CLASS_LABEL = {
-  physical: 'Phys',
-  special: 'Spec',
-  status: 'Stat',
 };
 
 export default function BattleCard({ enemyParty }) {
@@ -170,7 +165,7 @@ function BattleOpponent({ mon, isActive }) {
         {isActive && (
           <div className="bc-moves">
             {moveSlots.map((name, i) => (
-              <MoveCell key={i} name={name} data={name ? moveData.get(name) : undefined} />
+              <MoveCard key={i} name={name} data={name ? moveData.get(name) : undefined} />
             ))}
           </div>
         )}
@@ -179,39 +174,3 @@ function BattleOpponent({ mon, isActive }) {
   );
 }
 
-function MoveCell({ name, data }) {
-  if (!name) return <div className="bc-move bc-move-empty" />;
-
-  if (data === undefined) {
-    return (
-      <div className="bc-move" title={name}>
-        <span className="bc-move-name">{name}</span>
-        <span className="bc-move-meta bc-move-loading">&hellip;</span>
-      </div>
-    );
-  }
-
-  if (data === null) {
-    return (
-      <div className="bc-move" title="Custom move data not available">
-        <span className="bc-move-name">{name}</span>
-        <span className="bc-move-meta bc-move-custom">Custom</span>
-      </div>
-    );
-  }
-
-  const typeColor = TYPE_COLORS[data.type?.charAt(0).toUpperCase() + data.type?.slice(1)] || '#666';
-  const powerLabel = data.power != null ? data.power : '—';
-  const clsLabel = DAMAGE_CLASS_LABEL[data.damageClass] || '';
-
-  return (
-    <div className="bc-move" title={data.description || name}>
-      <span className="bc-move-name">{name}</span>
-      <span className="bc-move-meta">
-        <span className="bc-move-type-dot" style={{ background: typeColor }} />
-        <span className="bc-move-power">{powerLabel}</span>
-        {clsLabel && <span className="bc-move-cls">{clsLabel}</span>}
-      </span>
-    </div>
-  );
-}

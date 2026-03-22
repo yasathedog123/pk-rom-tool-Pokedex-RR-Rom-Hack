@@ -50,6 +50,7 @@ function extractMoveData(data) {
   return {
     type: data.type?.name || null,
     power: data.power,
+    accuracy: data.accuracy,
     damageClass: data.damage_class?.name || null,
     description: enEffect?.short_effect || null,
   };
