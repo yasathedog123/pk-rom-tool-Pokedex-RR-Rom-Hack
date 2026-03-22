@@ -35,10 +35,31 @@ const STATUS_META = {
   Frozen:    { label: 'FRZ', cls: 'pc-status-frz' },
 };
 
+function LightningOverlay() {
+  return (
+    <div className="bc-lightning-overlay">
+      <svg className="bc-bolt bc-bolt-1" viewBox="0 0 40 120" fill="none">
+        <path d="M22 0L8 50h12L4 120l30-60H20L34 0z" fill="#fbbf24" opacity="0.9"/>
+        <path d="M20 4L9 48h10L6 112l24-50H18L30 4z" fill="#fff" opacity="0.7"/>
+      </svg>
+      <svg className="bc-bolt bc-bolt-2" viewBox="0 0 40 120" fill="none">
+        <path d="M22 0L8 50h12L4 120l30-60H20L34 0z" fill="#fbbf24" opacity="0.9"/>
+        <path d="M20 4L9 48h10L6 112l24-50H18L30 4z" fill="#fff" opacity="0.7"/>
+      </svg>
+      <svg className="bc-bolt bc-bolt-3" viewBox="0 0 40 120" fill="none">
+        <path d="M22 0L8 50h12L4 120l30-60H20L34 0z" fill="#fbbf24" opacity="0.9"/>
+        <path d="M20 4L9 48h10L6 112l24-50H18L30 4z" fill="#fff" opacity="0.7"/>
+      </svg>
+    </div>
+  );
+}
+
 export default function BattleCard({ enemyParty, playerLeadTypes }) {
   const [visible, setVisible] = useState(false);
   const [exiting, setExiting] = useState(false);
+  const [showLightning, setShowLightning] = useState(false);
   const lastPartyRef = useRef([]);
+  const prevHadEnemies = useRef(false);
 
   const hasEnemies = enemyParty && enemyParty.length > 0;
 
@@ -46,10 +67,15 @@ export default function BattleCard({ enemyParty, playerLeadTypes }) {
     if (hasEnemies) {
       lastPartyRef.current = enemyParty;
       setExiting(false);
+      if (!prevHadEnemies.current) {
+        setShowLightning(true);
+        setTimeout(() => setShowLightning(false), 800);
+      }
       setVisible(true);
     } else if (visible) {
       setExiting(true);
     }
+    prevHadEnemies.current = hasEnemies;
   }, [hasEnemies]);
 
   useEffect(() => {
@@ -67,6 +93,7 @@ export default function BattleCard({ enemyParty, playerLeadTypes }) {
 
   return (
     <div className={`bc-wrap ${exiting ? 'bc-exit' : 'bc-enter'}`}>
+      {showLightning && <LightningOverlay />}
       <h3 className="section-title">Opponent</h3>
       {displayParty.map((mon, i) => (
         <BattleOpponent key={mon.personality || i} mon={mon} isActive={i === 0} playerLeadTypes={playerLeadTypes} />

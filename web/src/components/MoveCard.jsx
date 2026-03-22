@@ -10,7 +10,20 @@ function splitMoveName(name) {
              .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2');
 }
 
-const CLS_LABEL = { physical: 'Phys', special: 'Spec', status: 'Status' };
+const SHOWDOWN_CATEGORIES = 'https://play.pokemonshowdown.com/sprites/categories';
+
+function CategoryIcon({ damageClass }) {
+  if (!damageClass) return null;
+  const file = damageClass.charAt(0).toUpperCase() + damageClass.slice(1);
+  return (
+    <img
+      className="mc-cls-icon"
+      src={`${SHOWDOWN_CATEGORIES}/${file}.png`}
+      alt={damageClass}
+      title={capitalize(damageClass)}
+    />
+  );
+}
 
 function EffBadge({ eff, damageClass }) {
   if (damageClass === 'status') return null;
@@ -62,7 +75,6 @@ export default function MoveCard({ name, data, effectiveness, compact }) {
   const typeColor = TYPE_COLORS[typeName] || '#666';
   const powerLabel = data.power != null ? data.power : '--';
   const accLabel = data.accuracy != null ? data.accuracy : '--';
-  const clsLabel = CLS_LABEL[data.damageClass] || '';
   const isStatus = data.damageClass === 'status';
 
   if (compact) {
@@ -75,7 +87,7 @@ export default function MoveCard({ name, data, effectiveness, compact }) {
         <div className="mc-top">
           <span className="mc-type" style={{ background: typeColor }}>{typeName}</span>
           <span className="mc-name">{displayName}</span>
-          {clsLabel && <span className={`mc-cls mc-cls-${data.damageClass}`}>{clsLabel}</span>}
+          <CategoryIcon damageClass={data.damageClass} />
           <EffBadge eff={effectiveness} damageClass={data.damageClass} />
         </div>
       </div>
@@ -96,8 +108,11 @@ export default function MoveCard({ name, data, effectiveness, compact }) {
       <div className="mc-bottom">
         {!isStatus && <span className="mc-stat"><b>PWR</b> <span className="mc-val">{powerLabel}</span></span>}
         <span className="mc-stat"><b>ACC</b> <span className="mc-val">{accLabel}</span></span>
-        {clsLabel && <span className={`mc-cls mc-cls-${data.damageClass}`}>{clsLabel}</span>}
+        <CategoryIcon damageClass={data.damageClass} />
       </div>
+      {data.description && (
+        <div className="mc-desc">{data.description}</div>
+      )}
     </div>
   );
 }

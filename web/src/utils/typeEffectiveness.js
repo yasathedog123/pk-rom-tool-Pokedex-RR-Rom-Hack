@@ -1,4 +1,4 @@
-git sconst TYPES = [
+const TYPES = [
   'Normal','Fire','Water','Electric','Grass','Ice',
   'Fighting','Poison','Ground','Flying','Psychic','Bug',
   'Rock','Ghost','Dragon','Dark','Steel','Fairy',
@@ -62,10 +62,10 @@ export function getEffectiveness(moveType, defenderTypes) {
   }
 
   if (mult === 1) return { multiplier: 1, label: null };
-  if (mult === 0) return { multiplier: 0, label: '0x' };
-  if (mult >= 4)  return { multiplier: mult, label: '4x' };
-  if (mult >= 2)  return { multiplier: mult, label: '2x' };
-  if (mult <= 0.25) return { multiplier: mult, label: '\u00BCx' };
-  if (mult < 1)   return { multiplier: mult, label: '\u00BDx' };
+  if (mult === 0) return { multiplier: 0, label: 'Immune' };
+  if (mult >= 4)  return { multiplier: mult, label: 'Super Effective' };
+  if (mult >= 2)  return { multiplier: mult, label: 'Effective' };
+  if (mult <= 0.25) return { multiplier: mult, label: 'Not Effective' };
+  if (mult < 1)   return { multiplier: mult, label: 'Not Effective' };
   return { multiplier: mult, label: null };
 }
