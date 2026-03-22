@@ -2,16 +2,15 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import StatusBar from './components/StatusBar';
 import SettingsModal from './components/SettingsModal';
 import PartyGrid from './components/PartyGrid';
-import SoulLinkTimeline from './components/SoulLinkTimeline';
 import RouteLinkList, { SoloRouteLinkList } from './components/RouteLinkList';
 import EventFeed from './components/EventFeed';
+import EventToasts from './components/EventToasts';
 import BattleCard from './components/BattleCard';
 import RouteManager from './components/RouteManager';
 import TrainerSpritePicker, { getTrainerSpriteUrl } from './components/TrainerSpritePicker';
 import useLocalTracker from './hooks/useLocalTracker';
 import useRoom from './hooks/useRoom';
 import { getMockPlayerCount, generateMockData } from './utils/mockData';
-import { getTimeline } from './data/gameTimelines';
 import {
   getPlayerId, getPlayerName, setPlayerName as saveName,
   getLocalUrl, setLocalUrl as saveLocal,
@@ -289,7 +288,6 @@ export default function App() {
         )}
 
         {localOk && isSolo && (() => {
-          const timeline = getTimeline(gameName);
           return (
             <div className="layout-solo">
               <section className="solo-party">
@@ -302,27 +300,13 @@ export default function App() {
               </section>
               <section className="solo-encounters">
                 {filteredSoloRoutes.length > 0 && <SoloRouteLinkList routes={filteredSoloRoutes} gameName={gameName} />}
-                <div className="solo-events">
-                  <h2 className="section-title">Events</h2>
-                  <EventFeed events={[...soloEvents, ...battleEvents]} />
-                </div>
               </section>
               <BattleCard enemyParty={enemyParty} />
-              {timeline && (
-                <aside className="solo-timeline">
-                  <SoulLinkTimeline
-                    timeline={timeline}
-                    encounters={filteredSoloRoutes}
-                    gameName={gameName}
-                  />
-                </aside>
-              )}
             </div>
           );
         })()}
 
         {(localOk || isMockMode) && isMulti && (() => {
-          const timeline = getTimeline(gameName);
           const activeId = selectedTrainerId || finalTrainerParties[0]?.playerId;
           const activeTrainer = finalTrainerParties.find(t => t.playerId === activeId) || finalTrainerParties[0];
           const isViewingLocal = activeId === localPlayerId;
@@ -339,10 +323,6 @@ export default function App() {
                     <RouteLinkList links={finalRoomLinks} players={finalRoomPlayers} />
                   </div>
                 )}
-                <div className="multi-events-section">
-                  <h3 className="section-title">{isMockMode ? 'Events (Mock)' : 'Room Events'}</h3>
-                  <EventFeed events={finalRoomEvents} />
-                </div>
               </aside>
               <section className="multi-party-col">
                 <PartyGrid
@@ -366,12 +346,9 @@ export default function App() {
                     : <div className="multi-battle-placeholder"><span>No active battle</span></div>
                 }
               </aside>
-              <aside className="multi-timeline-col">
-                <SoulLinkTimeline
-                  timeline={timeline}
-                  encounters={isMockMode ? [] : filteredSoloRoutes}
-                  gameName={gameName}
-                />
+              <aside className="multi-events-col">
+                <h3 className="section-title">{isMockMode ? 'Events (Mock)' : 'Events'}</h3>
+                <EventFeed events={[...finalRoomEvents, ...battleEvents]} />
               </aside>
             </div>
           );
@@ -392,10 +369,6 @@ export default function App() {
               </section>
               <section className="solo-encounters">
                 {roomLinks.length > 0 && <RouteLinkList links={roomLinks} players={roomPlayers} />}
-                <div className="solo-events">
-                  <h2 className="section-title">Room Events</h2>
-                  <EventFeed events={[...roomEvents, ...battleEvents]} />
-                </div>
               </section>
               <BattleCard enemyParty={enemyParty} playerLeadTypes={soloLeadPlayerTypes} />
             </div>
@@ -431,6 +404,8 @@ export default function App() {
           onClose={() => setSpritePickerOpen(false)}
         />
       )}
+
+      <EventToasts events={[...soloEvents, ...roomEvents, ...battleEvents]} />
 
       <footer className="app-footer">
         <div className="footer-brand">

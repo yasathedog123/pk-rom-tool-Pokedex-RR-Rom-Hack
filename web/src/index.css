@@ -205,14 +205,8 @@ button:active { transform:scale(0.97); }
 }
 .solo-party { flex-shrink:0; }
 .solo-encounters { flex:1; min-width:0; max-width:420px; }
-.solo-events { margin-top:16px; }
-.solo-timeline {
-  width:280px; min-width:240px; flex-shrink:0;
-  max-height:calc(100vh - 80px); overflow-y:auto;
-  padding-right:4px;
-}
 
-/* ---- Multi Layout (4-column: encounters | party | battle | timeline) ---- */
+/* ---- Multi Layout (4-column: encounters | party | battle | events) ---- */
 .layout-multi-new {
   display: flex;
   gap: 20px;
@@ -259,16 +253,18 @@ button:active { transform:scale(0.97); }
   padding: 20px;
   line-height: 1.6;
 }
-.multi-timeline-col {
-  width: 300px;
-  min-width: 260px;
+.multi-events-col {
+  width: 280px;
+  min-width: 240px;
   flex-shrink: 0;
   max-height: calc(100vh - 80px);
   overflow-y: auto;
   padding-right: 4px;
 }
+.multi-events-col .feed {
+  max-height: none;
+}
 .multi-links-section { }
-.multi-events-section { margin-top: 16px; }
 .party-grids-center { justify-content:center; }
 
 /* ---- Party Grids ---- */
@@ -375,13 +371,13 @@ button:active { transform:scale(0.97); }
 /* ---- Party Grid ---- */
 .pg-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 8px;
 }
 
 /* ---- PartyCard ---- */
 .pc {
-  width: 268px;
+  width: 220px;
   position: relative;
   transition: border-color .2s, box-shadow .2s;
   background: var(--glass-bg);
@@ -476,11 +472,11 @@ button:active { transform:scale(0.97); }
 /* ---- Card Header (type gradient) ---- */
 .pc-header {
   position: relative;
-  padding: 10px 12px 14px;
+  padding: 8px 10px 10px;
   border-radius: var(--radius) var(--radius) 0 0;
   display: flex;
   align-items: flex-end;
-  min-height: 56px;
+  min-height: 48px;
 }
 .pc-level-block {
   display:flex; flex-direction:column; gap:0;
@@ -492,7 +488,7 @@ button:active { transform:scale(0.97); }
   line-height:1;
 }
 .pc-level-num {
-  font-size:24px; font-weight:800; line-height:1;
+  font-size:20px; font-weight:800; line-height:1;
   color:#fff; text-shadow:0 1px 4px rgba(0,0,0,0.3);
 }
 .pc-header-meta {
@@ -508,15 +504,15 @@ button:active { transform:scale(0.97); }
   pointer-events:none;
 }
 .pc-sprite {
-  width:115px; height:115px;
+  width:90px; height:90px;
   image-rendering:pixelated; object-fit:contain;
   filter:drop-shadow(0 2px 6px rgba(0,0,0,0.3));
   animation: breathe 3s ease-in-out infinite;
 }
 .pc-sprite-fb {
-  width:115px; height:115px;
+  width:90px; height:90px;
   display:flex; align-items:center; justify-content:center;
-  font-weight:700; font-size:24px; color:rgba(255,255,255,0.2);
+  font-weight:700; font-size:20px; color:rgba(255,255,255,0.2);
 }
 .pc-dead .pc-sprite { filter:grayscale(1) brightness(0.4) drop-shadow(0 2px 6px rgba(0,0,0,0.3)); animation:none; }
 
@@ -535,11 +531,11 @@ button:active { transform:scale(0.97); }
 
 /* ---- Card Details ---- */
 .pc-details {
-  padding: 10px 12px 8px;
+  padding: 8px 10px 6px;
 }
 .pc-name-row { display:flex; align-items:center; gap:4px; }
 .pc-nickname {
-  font-size:15px; font-weight:700; line-height:1.2;
+  font-size:13px; font-weight:700; line-height:1.2;
   overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
 }
 .pc-shiny { color:var(--gold); font-size:14px; line-height:1; }
@@ -1449,6 +1445,118 @@ button:active { transform:scale(0.97); }
   animation: assignFlash .6s ease-out;
 }
 
+/* ---- Event Toasts ---- */
+.toast-container {
+  position:fixed; bottom:60px; right:20px;
+  z-index:50;
+  display:flex; flex-direction:column-reverse; gap:6px;
+  pointer-events:none;
+  max-width:320px;
+}
+@keyframes toastIn {
+  from { opacity:0; transform:translateX(40px); }
+  to   { opacity:1; transform:translateX(0); }
+}
+@keyframes toastOut {
+  from { opacity:1; transform:translateX(0); }
+  to   { opacity:0; transform:translateX(40px) scale(0.95); }
+}
+.toast-item {
+  display:flex; align-items:center; gap:8px;
+  padding:8px 14px;
+  border-radius:var(--radius-sm);
+  background:rgba(20,20,28,0.92);
+  border:1px solid var(--glass-border);
+  backdrop-filter:blur(12px);
+  box-shadow:0 4px 20px rgba(0,0,0,0.4);
+  font-size:12px; font-weight:500;
+  color:var(--text);
+  animation:toastIn .25s ease-out both;
+  pointer-events:auto;
+}
+.toast-item.toast-exit {
+  animation:toastOut .3s ease-in both;
+}
+.toast-icon {
+  width:20px; height:20px; display:flex; align-items:center;
+  justify-content:center; font-weight:800; border-radius:50%;
+  font-size:10px; flex-shrink:0;
+}
+.toast-catch .toast-icon { background:rgba(34,197,94,0.2); color:#86efac; }
+.toast-faint .toast-icon { background:rgba(239,68,68,0.2); color:#fca5a5; }
+.toast-battle .toast-icon { background:rgba(245,158,11,0.2); color:#fbbf24; }
+.toast-battle-end .toast-icon { background:rgba(100,116,139,0.2); color:#94a3b8; }
+.toast-text {
+  flex:1; min-width:0;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+
+/* ---- Event History Button ---- */
+.event-history-btn {
+  position:fixed; bottom:16px; right:20px;
+  z-index:51;
+  display:flex; align-items:center; gap:6px;
+  padding:8px 14px;
+  border-radius:999px;
+  background:rgba(20,20,28,0.9);
+  border:1px solid var(--glass-border);
+  backdrop-filter:blur(12px);
+  box-shadow:0 2px 12px rgba(0,0,0,0.3);
+  color:var(--text-muted);
+  cursor:pointer;
+  transition:background .15s, color .15s, border-color .15s, box-shadow .15s;
+}
+.event-history-btn:hover {
+  background:rgba(30,30,40,0.95);
+  border-color:var(--accent);
+  color:var(--text);
+  box-shadow:0 2px 16px rgba(59,130,246,0.15);
+}
+.event-history-icon {
+  font-size:14px; line-height:1;
+}
+.event-history-label {
+  font-size:10px; font-weight:700; text-transform:uppercase;
+  letter-spacing:.5px;
+}
+
+/* ---- Event History Panel ---- */
+@keyframes historySlideUp {
+  from { opacity:0; transform:translateY(16px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+.event-history-panel {
+  position:fixed; bottom:56px; right:20px;
+  z-index:52;
+  width:340px; max-height:420px;
+  display:flex; flex-direction:column;
+  background:rgba(18,18,24,0.96);
+  border:1px solid var(--glass-border);
+  border-radius:var(--radius);
+  backdrop-filter:blur(16px);
+  box-shadow:0 8px 40px rgba(0,0,0,0.5);
+  animation:historySlideUp .2s ease-out;
+}
+.event-history-header {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:10px 14px;
+  border-bottom:1px solid var(--glass-border);
+  font-size:11px; font-weight:700; text-transform:uppercase;
+  letter-spacing:.8px; color:var(--text-muted);
+}
+.event-history-close {
+  background:none; border:none; color:var(--text-muted);
+  font-size:14px; cursor:pointer; padding:0 2px; line-height:1;
+}
+.event-history-close:hover { color:var(--text); }
+.event-history-body {
+  overflow-y:auto; flex:1; min-height:0;
+  padding:8px 10px;
+}
+.event-history-body .feed {
+  max-height:none;
+}
+
 /* ---- Footer ---- */
 .app-footer {
   padding:16px 24px 20px;
@@ -1483,7 +1591,6 @@ button:active { transform:scale(0.97); }
 @media (max-width: 1000px) {
   .layout-solo { flex-direction:column; }
   .solo-encounters { width:100%; }
-  .solo-timeline { width:100%; min-width:0; max-height:400px; }
   .layout-multi-new { flex-direction:column; }
   .multi-encounters {
     width:100%; min-width:0;
@@ -1493,14 +1600,14 @@ button:active { transform:scale(0.97); }
     width:100%; min-width:0;
     max-height:none;
   }
-  .multi-timeline-col {
+  .multi-events-col {
     width:100%; min-width:0;
     max-height:400px;
   }
   .pg-trainer-tabs { flex-wrap:wrap; }
 }
 @media (max-width: 900px) {
-  .pg-grid { grid-template-columns:1fr; }
+  .pg-grid { grid-template-columns:1fr 1fr; }
   .pc { width:100%; }
   .party-grids { flex-direction:column; }
   .et-col-route { width:80px; }
