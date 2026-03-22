@@ -52,7 +52,8 @@ local pokemonData = {
 		"Normal", "Fighting", "Flying", "Poison", "Ground", "Rock",
 		"Bug", "Ghost", "Steel", "???", "Fire", "Water",
 		"Grass", "Electric", "Psychic", "Ice", "Dragon", "Dark",
-		[23] = "Fairy" -- Romhacks may use this index for Fairy
+		"Fairy",
+		[23] = "Fairy"
 	},
 	hiddenPowerType = {
 		"Fighting", "Flying", "Poison", "Ground", "Rock", "Bug",
