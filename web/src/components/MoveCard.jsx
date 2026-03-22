@@ -4,9 +4,16 @@ function capitalize(s) {
   return s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
 }
 
+function splitMoveName(name) {
+  if (!name) return '';
+  return name.replace(/([a-z])([A-Z])/g, '$1 $2')
+             .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2');
+}
+
 const CLS_LABEL = { physical: 'Phys', special: 'Spec', status: 'Status' };
 
-function EffBadge({ eff }) {
+function EffBadge({ eff, damageClass }) {
+  if (damageClass === 'status') return null;
   if (!eff || !eff.label) return null;
   const cls = eff.multiplier > 1 ? 'mc-eff-se'
             : eff.multiplier === 0 ? 'mc-eff-immune'
@@ -15,6 +22,8 @@ function EffBadge({ eff }) {
 }
 
 export default function MoveCard({ name, data, effectiveness, compact }) {
+  const displayName = splitMoveName(name);
+
   if (!name) return <div className={`mc mc-empty ${compact ? 'mc-compact' : ''}`} />;
 
   if (data === undefined) {
@@ -22,7 +31,7 @@ export default function MoveCard({ name, data, effectiveness, compact }) {
       <div className={`mc mc-loading ${compact ? 'mc-compact' : ''}`}>
         <div className="mc-top">
           <span className="mc-type-placeholder" />
-          <span className="mc-name">{name}</span>
+          <span className="mc-name">{displayName}</span>
         </div>
         {!compact && (
           <div className="mc-bottom">
@@ -37,7 +46,7 @@ export default function MoveCard({ name, data, effectiveness, compact }) {
     return (
       <div className={`mc mc-custom ${compact ? 'mc-compact' : ''}`}>
         <div className="mc-top">
-          <span className="mc-name">{name}</span>
+          <span className="mc-name">{displayName}</span>
           <EffBadge eff={effectiveness} />
         </div>
         {!compact && (
@@ -54,19 +63,20 @@ export default function MoveCard({ name, data, effectiveness, compact }) {
   const powerLabel = data.power != null ? data.power : '--';
   const accLabel = data.accuracy != null ? data.accuracy : '--';
   const clsLabel = CLS_LABEL[data.damageClass] || '';
+  const isStatus = data.damageClass === 'status';
 
   if (compact) {
     return (
       <div
         className="mc mc-compact"
-        style={{ borderLeftColor: typeColor, background: `linear-gradient(90deg, ${typeColor}18, transparent 60%)` }}
-        title={data.description || name}
+        style={{ borderLeftColor: typeColor, background: `linear-gradient(90deg, ${typeColor}22, transparent 60%)` }}
+        title={data.description || displayName}
       >
         <div className="mc-top">
-          <span className="mc-type-dot" style={{ background: typeColor }} />
-          <span className="mc-name">{name}</span>
+          <span className="mc-type" style={{ background: typeColor }}>{typeName}</span>
+          <span className="mc-name">{displayName}</span>
           {clsLabel && <span className={`mc-cls mc-cls-${data.damageClass}`}>{clsLabel}</span>}
-          <EffBadge eff={effectiveness} />
+          <EffBadge eff={effectiveness} damageClass={data.damageClass} />
         </div>
       </div>
     );
@@ -75,17 +85,17 @@ export default function MoveCard({ name, data, effectiveness, compact }) {
   return (
     <div
       className="mc"
-      style={{ borderLeftColor: typeColor, background: `linear-gradient(90deg, ${typeColor}18, transparent 60%)` }}
-      title={data.description || name}
+      style={{ borderLeftColor: typeColor, background: `linear-gradient(90deg, ${typeColor}22, transparent 60%)` }}
+      title={data.description || displayName}
     >
       <div className="mc-top">
         <span className="mc-type" style={{ background: typeColor }}>{typeName}</span>
-        <span className="mc-name">{name}</span>
-        <EffBadge eff={effectiveness} />
+        <span className="mc-name">{displayName}</span>
+        <EffBadge eff={effectiveness} damageClass={data.damageClass} />
       </div>
       <div className="mc-bottom">
-        <span className="mc-stat"><b>PWR</b> {powerLabel}</span>
-        <span className="mc-stat"><b>ACC</b> {accLabel}</span>
+        {!isStatus && <span className="mc-stat"><b>PWR</b> <span className="mc-val">{powerLabel}</span></span>}
+        <span className="mc-stat"><b>ACC</b> <span className="mc-val">{accLabel}</span></span>
         {clsLabel && <span className={`mc-cls mc-cls-${data.damageClass}`}>{clsLabel}</span>}
       </div>
     </div>

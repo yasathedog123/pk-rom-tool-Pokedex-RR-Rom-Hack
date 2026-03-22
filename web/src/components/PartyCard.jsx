@@ -60,7 +60,7 @@ export default function PartyCard({ mon, routeName, isActiveBattler, inBattle, o
   const moveData   = useMoveData(inBattle ? rawMoves : []);
 
   return (
-    <div className={`pc ${alive ? '' : 'pc-dead'} ${isActiveBattler ? 'pc-active-battler' : ''}`}>
+    <div className={`pc ${alive ? '' : 'pc-dead'} ${isActiveBattler ? 'pc-active-battler' : ''} ${inBattle && !isActiveBattler ? 'pc-battle-inactive' : ''}`}>
       <div className="pc-header" style={{ background: typeGradient(types) }}>
         <div className="pc-level-block">
           <span className="pc-level-label">Level</span>
