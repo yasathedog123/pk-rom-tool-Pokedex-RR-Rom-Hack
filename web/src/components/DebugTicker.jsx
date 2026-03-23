@@ -1,29 +1,37 @@
 import { useState, useEffect, useRef } from 'react';
 
+function ts() { return new Date().toLocaleTimeString(); }
+function mkLog(text, type) { return { text, type, id: Date.now() + Math.random(), ts: ts() }; }
+
 export default function DebugTicker({ localConnected, syncConnected, mode, roomCode }) {
   const [open, setOpen] = useState(false);
   const [logs, setLogs] = useState([]);
-  const prevState = useRef({});
+  const prevState = useRef(null);
 
   useEffect(() => {
     const prev = prevState.current;
     const entries = [];
 
-    if (prev.localConnected !== undefined && prev.localConnected !== localConnected) {
-      entries.push({ text: localConnected ? 'Tracker connected' : 'Tracker disconnected', type: localConnected ? 'ok' : 'err' });
-    }
-    if (prev.syncConnected !== undefined && prev.syncConnected !== syncConnected) {
-      entries.push({ text: syncConnected ? 'Sync server connected' : 'Sync server disconnected', type: syncConnected ? 'ok' : 'err' });
-    }
-    if (prev.mode !== undefined && prev.mode !== mode) {
-      entries.push({ text: mode === 'room' ? `Joined room ${roomCode}` : 'Switched to solo', type: 'info' });
+    if (prev === null) {
+      entries.push(mkLog(localConnected ? 'Tracker connected' : 'Tracker offline', localConnected ? 'ok' : 'err'));
+      entries.push(mkLog(syncConnected ? 'Sync server connected' : 'Sync server offline', syncConnected ? 'ok' : 'err'));
+      if (mode === 'room' && roomCode) entries.push(mkLog(`In room ${roomCode}`, 'info'));
+    } else {
+      if (prev.localConnected !== localConnected) {
+        entries.push(mkLog(localConnected ? 'Tracker connected' : 'Tracker disconnected', localConnected ? 'ok' : 'err'));
+      }
+      if (prev.syncConnected !== syncConnected) {
+        entries.push(mkLog(syncConnected ? 'Sync server connected' : 'Sync server disconnected', syncConnected ? 'ok' : 'err'));
+      }
+      if (prev.mode !== mode) {
+        entries.push(mkLog(mode === 'room' ? `Joined room ${roomCode}` : 'Switched to solo', 'info'));
+      }
     }
 
     prevState.current = { localConnected, syncConnected, mode, roomCode };
 
     if (entries.length > 0) {
-      const timestamped = entries.map(e => ({ ...e, id: Date.now() + Math.random(), ts: new Date().toLocaleTimeString() }));
-      setLogs(prev => [...prev, ...timestamped].slice(-50));
+      setLogs(prev => [...prev, ...entries].slice(-50));
     }
   }, [localConnected, syncConnected, mode, roomCode]);
 
@@ -31,9 +39,8 @@ export default function DebugTicker({ localConnected, syncConnected, mode, roomC
 
   return (
     <div className="dt-wrap">
-      <button className="dt-toggle" onClick={() => setOpen(o => !o)} title="Debug Log">
+      <button className="dt-toggle" onClick={() => setOpen(o => !o)} title="Connection Log">
         <span className="dt-dot" style={{ background: dotColor }} />
-        {open ? '✕' : '⬡'}
       </button>
       {open && (
         <div className="dt-panel glass-card">

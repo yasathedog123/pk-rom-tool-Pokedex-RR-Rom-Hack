@@ -7,7 +7,7 @@ export default function StatusBar({ localConnected, syncConnected, mode, roomCod
   return (
     <header className="status-bar">
       <div className="brand">
-        <img className="brand-logo" src="https://play.pokemonshowdown.com/sprites/itemicons/link-cable.png" alt="" />
+        <img className="brand-logo" src="/link-cable.png" alt="" />
         <h1>Link Cable</h1>
         <span className="brand-sub">Pokemon ROM Companion</span>
         {hasGame && (

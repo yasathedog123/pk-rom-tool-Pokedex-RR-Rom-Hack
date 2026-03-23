@@ -286,7 +286,7 @@ export default function App() {
       {!localOk && !isMockMode && (
         <div className="landing">
           <div className="landing-hero">
-            <img className="landing-mascot" src="https://play.pokemonshowdown.com/sprites/itemicons/link-cable.png" alt="Link Cable" />
+            <img className="landing-mascot" src="/link-cable.png" alt="Link Cable" />
             <h1 className="landing-title">Link Cable</h1>
             <p className="landing-subtitle">A Pokemon ROM Companion</p>
             <div className="landing-features">
