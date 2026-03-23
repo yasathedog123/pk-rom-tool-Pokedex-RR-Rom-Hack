@@ -247,6 +247,7 @@ button:active { transform:scale(0.97); }
 .pg-group {
   padding:12px;
   border-radius:var(--radius);
+  overflow:hidden;
 }
 
 /* ---- Trainer Tabs ---- */
@@ -338,7 +339,7 @@ button:active { transform:scale(0.97); }
 /* ---- Party Grid ---- */
 .pg-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 10px;
 }
 
@@ -927,7 +928,7 @@ button:active { transform:scale(0.97); }
   font-size:9px; font-weight:700; text-transform:uppercase;
   letter-spacing:.6px; color:var(--text-muted);
 }
-.et-body { overflow-y:auto; }
+.et-body { max-height:350px; overflow-y:auto; }
 .et-row {
   display:flex; align-items:center; padding:6px 14px;
   border-bottom:1px solid rgba(255,255,255,0.03);
@@ -1589,7 +1590,6 @@ button:active { transform:scale(0.97); }
   .col-battle { width:100%; }
   .col-right { width:100%; }
   .right-timeline { max-height:400px; }
-  .pg-grid { grid-template-columns:repeat(2, 1fr); }
   .party-grids { flex-direction:column; }
   .et-col-route { width:80px; }
   .cpg-grid { grid-template-columns:1fr 1fr 1fr; }
@@ -1599,5 +1599,4 @@ button:active { transform:scale(0.97); }
 /* Compact: tighter padding */
 @media (max-width: 600px) {
   .main-area { padding: 12px 8px; }
-  .pg-grid { grid-template-columns: 1fr; }
 }
