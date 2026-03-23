@@ -290,31 +290,30 @@ export default function App() {
 
         {localOk && isSolo && (() => {
           const timeline = getTimeline(gameName);
+          const soloLeadOpponent = enemyParty?.[0]?.types || [];
           return (
-            <div className="layout-solo">
-              <section className="solo-encounters">
-                <h2 className="section-title">Encounters</h2>
-                {filteredSoloRoutes.length > 0 && <SoloRouteLinkList routes={filteredSoloRoutes} gameName={gameName} />}
-              </section>
-              <section className="solo-party">
-                <h2 className="section-title">Party</h2>
+            <div className="layout-main">
+              <section className="col-party">
                 <div className="party-grids">
                   {trainerParties.map(t => (
-                    <PartyGrid key={t.playerId} trainerName={t.name} party={t.party} routeMap={soloRouteMap} trainerSprite={t.spriteUrl} />
+                    <PartyGrid key={t.playerId} trainerName={t.name} party={t.party} routeMap={soloRouteMap} trainerSprite={t.spriteUrl} inBattle={inBattle} opponentTypes={soloLeadOpponent} />
                   ))}
                 </div>
               </section>
-              <aside className="solo-right-col">
-                <div>
-                  <h2 className="section-title">Battle</h2>
+              {inBattle && (
+                <section className="col-battle">
                   <BattleCard enemyParty={enemyParty} />
+                </section>
+              )}
+              <aside className="col-right">
+                <div className="right-encounters">
+                  <h2 className="section-title">Encounters</h2>
+                  {filteredSoloRoutes.length > 0 && <SoloRouteLinkList routes={filteredSoloRoutes} gameName={gameName} />}
                 </div>
                 {timeline && (
-                  <SoulLinkTimeline
-                    timeline={timeline}
-                    encounters={filteredSoloRoutes}
-                    gameName={gameName}
-                  />
+                  <div className="right-timeline">
+                    <SoulLinkTimeline timeline={timeline} encounters={filteredSoloRoutes} gameName={gameName} />
+                  </div>
                 )}
               </aside>
             </div>
@@ -331,16 +330,8 @@ export default function App() {
           const leadPlayerTypes = activeTrainer?.party?.[0]?.types || [];
 
           return (
-            <div className="layout-multi-new">
-              <aside className="multi-encounters">
-                {finalRoomLinks.length > 0 && (
-                  <div className="multi-links-section">
-                    <h3 className="section-title">Linked Encounters</h3>
-                    <RouteLinkList links={finalRoomLinks} players={finalRoomPlayers} />
-                  </div>
-                )}
-              </aside>
-              <section className="multi-party-col">
+            <div className="layout-main">
+              <section className="col-party">
                 <PartyGrid
                   trainerName={activeTrainer.name}
                   party={activeTrainer.party}
@@ -353,21 +344,27 @@ export default function App() {
                   opponentTypes={isViewingLocal ? leadOpponentTypes : []}
                 />
               </section>
-              <aside className={`multi-right-col${!isViewingLocal ? ' multi-battle-disabled' : ''}`}>
-                <div>
-                  <h3 className="section-title">Battle</h3>
-                  {!isViewingLocal
-                    ? <div className="multi-battle-placeholder multi-battle-remote"><span>Battle data not available for remote players</span></div>
-                    : showBattle
-                      ? <BattleCard enemyParty={enemyParty} playerLeadTypes={leadPlayerTypes} />
-                      : <div className="multi-battle-placeholder"><span>No active battle</span></div>
-                  }
+              {showBattle && (
+                <section className="col-battle">
+                  <BattleCard enemyParty={enemyParty} playerLeadTypes={leadPlayerTypes} />
+                </section>
+              )}
+              <aside className="col-right">
+                <div className="right-encounters">
+                  {finalRoomLinks.length > 0 && (
+                    <>
+                      <h3 className="section-title">Linked Encounters</h3>
+                      <RouteLinkList links={finalRoomLinks} players={finalRoomPlayers} />
+                    </>
+                  )}
                 </div>
-                <SoulLinkTimeline
-                  timeline={timeline}
-                  encounters={isMockMode ? [] : filteredSoloRoutes}
-                  gameName={gameName}
-                />
+                <div className="right-timeline">
+                  <SoulLinkTimeline
+                    timeline={timeline}
+                    encounters={isMockMode ? [] : filteredSoloRoutes}
+                    gameName={gameName}
+                  />
+                </div>
               </aside>
             </div>
           );
@@ -378,30 +375,28 @@ export default function App() {
           const soloLeadPlayerTypes = trainerParties[0]?.party?.[0]?.types || [];
           const timeline = getTimeline(gameName);
           return (
-            <div className="layout-solo">
-              <section className="solo-encounters">
-                <h2 className="section-title">Encounters</h2>
-                {roomLinks.length > 0 && <RouteLinkList links={roomLinks} players={roomPlayers} />}
-              </section>
-              <section className="solo-party">
-                <h2 className="section-title">Party</h2>
+            <div className="layout-main">
+              <section className="col-party">
                 <div className="party-grids">
                   {trainerParties.map(t => (
                     <PartyGrid key={t.playerId} trainerName={t.name} party={t.party} routeMap={roomRouteMap} trainerSprite={t.spriteUrl} inBattle={inBattle} opponentTypes={soloLeadOpponentTypes} />
                   ))}
                 </div>
               </section>
-              <aside className="solo-right-col">
-                <div>
-                  <h2 className="section-title">Battle</h2>
+              {inBattle && (
+                <section className="col-battle">
                   <BattleCard enemyParty={enemyParty} playerLeadTypes={soloLeadPlayerTypes} />
+                </section>
+              )}
+              <aside className="col-right">
+                <div className="right-encounters">
+                  <h2 className="section-title">Encounters</h2>
+                  {roomLinks.length > 0 && <RouteLinkList links={roomLinks} players={roomPlayers} />}
                 </div>
                 {timeline && (
-                  <SoulLinkTimeline
-                    timeline={timeline}
-                    encounters={filteredSoloRoutes}
-                    gameName={gameName}
-                  />
+                  <div className="right-timeline">
+                    <SoulLinkTimeline timeline={timeline} encounters={filteredSoloRoutes} gameName={gameName} />
+                  </div>
                 )}
               </aside>
             </div>

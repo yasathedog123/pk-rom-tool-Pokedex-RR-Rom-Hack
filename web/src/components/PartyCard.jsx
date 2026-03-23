@@ -6,6 +6,16 @@ import MoveCard from './MoveCard';
 import { TYPE_COLORS } from '../utils/types';
 import { getEffectiveness, getTypeMatchup } from '../utils/typeEffectiveness';
 
+function splitMoveName(name) {
+  if (!name) return '';
+  return name.replace(/([a-z])([A-Z])/g, '$1 $2')
+             .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2');
+}
+
+function capitalize(s) {
+  return s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
+}
+
 function hpColor(ratio) {
   if (ratio > 0.5) return '#34d399';
   if (ratio > 0.25) return '#fbbf24';
@@ -60,7 +70,7 @@ export default function PartyCard({ mon, routeName, isActiveBattler, inBattle, o
   const rawMoves   = mon.moveNames || mon.move_names || [];
   const moveSlots  = [];
   for (let i = 0; i < 4; i++) moveSlots.push(rawMoves[i] || null);
-  const moveData   = useMoveData(inBattle ? rawMoves : []);
+  const moveData   = useMoveData(rawMoves);
   const matchup    = isActiveBattler ? getTypeMatchup(types, opponentTypes) : null;
 
   const matchupCls = matchup === 'advantage' ? 'pc-matchup-adv'
@@ -131,19 +141,35 @@ export default function PartyCard({ mon, routeName, isActiveBattler, inBattle, o
         )}
       </div>
 
-      {inBattle ? (
-        <div className="pc-battle-moves">
-          {moveSlots.map((name, i) => {
-            const md = name ? moveData.get(name) : undefined;
-            const eff = md && md.type ? getEffectiveness(md.type, opponentTypes) : null;
-            return <MoveCard key={i} name={name} data={md} effectiveness={eff} compact />;
-          })}
-        </div>
-      ) : (
-        (baseStats || ivs || evs) && (
-          <StatFooter baseStats={baseStats} ivs={ivs} evs={evs} />
-        )
-      )}
+      <div className="pc-bottom-section">
+        {inBattle ? (
+          <div className="pc-battle-moves">
+            {moveSlots.map((name, i) => {
+              const md = name ? moveData.get(name) : undefined;
+              const eff = md && md.type ? getEffectiveness(md.type, opponentTypes) : null;
+              return <MoveCard key={i} name={name} data={md} effectiveness={eff} compact />;
+            })}
+          </div>
+        ) : (
+          <>
+            {(baseStats || ivs || evs) && (
+              <StatFooter baseStats={baseStats} ivs={ivs} evs={evs} />
+            )}
+            <div className="pc-concise-moves">
+              {moveSlots.map((name, i) => {
+                const md = name ? moveData.get(name) : null;
+                const typeName = md?.type ? capitalize(md.type) : null;
+                const typeColor = typeName ? TYPE_COLORS[typeName] : null;
+                return (
+                  <div key={i} className="pc-cmove" style={typeColor ? { borderLeftColor: typeColor, background: `linear-gradient(90deg, ${typeColor}15, transparent 60%)` } : {}}>
+                    {name ? splitMoveName(name) : <span className="pc-cmove-empty">&mdash;</span>}
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }
