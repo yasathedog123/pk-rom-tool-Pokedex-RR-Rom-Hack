@@ -350,6 +350,7 @@ async def reconcile_room(code: str, request: ReconcileRequest):
         player_id=request.player_id,
         player_name=request.player_name,
         current_party=request.current_party,
+        enemy_party=request.enemy_party,
         updated_at=datetime.utcnow(),
     )
     room.player_snapshots[request.player_id] = snapshot

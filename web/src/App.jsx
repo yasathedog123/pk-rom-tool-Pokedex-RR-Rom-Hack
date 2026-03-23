@@ -82,7 +82,7 @@ export default function App() {
   const [selectedTrainerId, setSelectedTrainerId] = useState(null);
 
   const { connected: localOk, status, soulLink, party: localParty, trainerInfo, enemyParty } = useLocalTracker(localUrl);
-  const room = useRoom(syncUrl, playerName, status, soulLink, localParty);
+  const room = useRoom(syncUrl, playerName, status, soulLink, localParty, enemyParty);
 
   const localPlayerId = getPlayerId();
 
@@ -330,6 +330,16 @@ export default function App() {
           const leadOpponentTypes = enemyParty?.[0]?.types || [];
           const leadPlayerTypes = activeTrainer?.party?.[0]?.types || [];
 
+          const partnerBattles = (finalRoomPlayers || [])
+            .filter(p => (p.player_id || p) !== localPlayerId)
+            .map(p => {
+              const pid = p.player_id || p;
+              const snap = room.roomState?.player_snapshots?.[pid];
+              const ep = snap?.enemy_party || [];
+              return ep.length > 0 ? { playerName: p.player_name || pid, lead: ep[0] } : null;
+            })
+            .filter(Boolean);
+
           return (
             <div className="layout-main">
               <section className="col-party">
@@ -352,6 +362,20 @@ export default function App() {
                 </section>
               )}
               <aside className="col-right">
+                {partnerBattles.length > 0 && (
+                  <div className="partner-battle-banner glass-card">
+                    {partnerBattles.map(pb => (
+                      <div key={pb.playerName} className="pb-row">
+                        <span className="pb-icon">⚔</span>
+                        <span className="pb-text">
+                          <strong>{pb.playerName}</strong> battling{' '}
+                          {pb.lead.species_name || pb.lead.species || '???'}
+                          {pb.lead.level ? ` Lv.${pb.lead.level}` : ''}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
                 <div className="right-encounters">
                   {finalRoomLinks.length > 0 && (
                     <>

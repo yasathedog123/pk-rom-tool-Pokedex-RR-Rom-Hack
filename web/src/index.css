@@ -1636,6 +1636,25 @@ button:active { transform:scale(0.97); }
   cursor:default;
 }
 
+/* ---- Partner Battle Banner ---- */
+.partner-battle-banner {
+  padding:8px 12px;
+  border-left:3px solid var(--gold);
+  animation: fadeSlideIn .35s ease-out;
+}
+.pb-row {
+  display:flex; align-items:center; gap:6px;
+}
+.pb-icon {
+  font-size:14px; flex-shrink:0;
+}
+.pb-text {
+  font-size:11px; color:var(--text);
+}
+.pb-text strong {
+  color:var(--gold);
+}
+
 /* ---- Responsive ---- */
 
 /* Wrap: battle card drops below party, right column stays beside */

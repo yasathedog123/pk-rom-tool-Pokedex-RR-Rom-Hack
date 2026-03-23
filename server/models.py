@@ -101,6 +101,7 @@ class ReconcileRequest(BaseModel):
     player_name: str
     timestamp: int
     current_party: list[SyncPokemon] = []
+    enemy_party: list[SyncPokemon] = []
     recent_events: list[LocalEvent] = []
 
 
@@ -147,6 +148,7 @@ class PlayerSnapshot(BaseModel):
     player_id: str
     player_name: str
     current_party: list[SyncPokemon] = []
+    enemy_party: list[SyncPokemon] = []
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
 

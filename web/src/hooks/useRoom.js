@@ -61,7 +61,7 @@ function mapEvent(ev, playerId, playerName) {
   };
 }
 
-export default function useRoom(syncUrl, playerName, localStatus, localSoul, localParty) {
+export default function useRoom(syncUrl, playerName, localStatus, localSoul, localParty, enemyParty) {
   const [roomCode, setRoomCode]       = useState('');
   const [roomState, setRoomState]     = useState(null);
   const [syncConnected, setSyncConn]  = useState(false);
@@ -121,12 +121,13 @@ export default function useRoom(syncUrl, playerName, localStatus, localSoul, loc
             friendship: detailsByPersonality.get(mon.personality).friendship || 0,
           } : {}),
         })),
+        enemy_party: (enemyParty || []).map(mon => mapSyncMon(mon)),
         recent_events: newEvents,
       });
       newEvents.forEach(ev => sentIds.current.add(ev.id));
       await refreshRoom(code);
     } catch { /* will retry next cycle */ }
-  }, [syncUrl, localSoul, localParty, playerId, playerName, refreshRoom]);
+  }, [syncUrl, localSoul, localParty, enemyParty, playerId, playerName, refreshRoom]);
 
   const create = useCallback(async () => {
     if (!localStatus?.game?.initialized) { setError('Local game not detected.'); return; }
