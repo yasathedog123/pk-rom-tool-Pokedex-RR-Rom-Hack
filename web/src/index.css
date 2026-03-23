@@ -339,7 +339,7 @@ button:active { transform:scale(0.97); }
 /* ---- Party Grid ---- */
 .pg-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 10px;
 }
 
@@ -513,6 +513,10 @@ button:active { transform:scale(0.97); }
 }
 
 .pc-chips { display:flex; gap:3px; margin-top:4px; flex-wrap:wrap; align-items:center; }
+.pc-meta-row {
+  display:flex; gap:6px; align-items:center; margin-top:3px;
+  flex-wrap:wrap;
+}
 .type-badge {
   padding:2px 7px; border-radius:4px; font-size:9px;
   font-weight:700; color:#fff; text-transform:uppercase; letter-spacing:.2px;
@@ -563,8 +567,14 @@ button:active { transform:scale(0.97); }
   flex-shrink:0;
 }
 .pc-ability {
-  font-size:8px; color:var(--text-muted); margin-top:2px;
-  font-style:italic;
+  font-size:9px; font-weight:600; color:var(--accent);
+  padding:2px 6px; border-radius:4px;
+  background:rgba(59,130,246,0.08); border:1px solid rgba(59,130,246,0.15);
+  animation: abilityPulse 2s ease-in-out infinite alternate;
+}
+@keyframes abilityPulse {
+  from { border-color:rgba(59,130,246,0.15); }
+  to   { border-color:rgba(59,130,246,0.35); }
 }
 .pc-bottom-section {
   border-top:1px solid var(--glass-border);
@@ -1681,4 +1691,5 @@ button:active { transform:scale(0.97); }
 /* Compact: tighter padding */
 @media (max-width: 600px) {
   .main-area { padding: 12px 8px; }
+  .pg-grid { grid-template-columns: repeat(2, 1fr); }
 }

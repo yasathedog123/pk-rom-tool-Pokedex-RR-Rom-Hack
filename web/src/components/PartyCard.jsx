@@ -144,19 +144,24 @@ export default function PartyCard({ mon, routeName, isActiveBattler, inBattle, o
         <div className="pc-species">{species !== nickname ? species : '\u00A0'}</div>
         <div className="pc-chips">
           {types.map(t => <TypeBadge key={t} type={t} />)}
-          {nature && (
-            <span className={`pc-nature ${natureEffects ? 'pc-nature-stat' : 'pc-nature-neutral'}`}>
-              {nature}
-              {natureEffects && (
-                <span className="pc-nature-fx">
-                  <span className="pc-nat-up">{natureEffects[0]}</span>
-                  <span className="pc-nat-dn">{natureEffects[1]}</span>
-                </span>
-              )}
-            </span>
-          )}
           {statusInfo && <span className={`pc-status ${statusInfo.cls}`}>{statusInfo.label}</span>}
         </div>
+        {(nature || ability) && (
+          <div className="pc-meta-row">
+            {nature && (
+              <span className="pc-nature">
+                {nature}
+                {natureEffects && (
+                  <span className="pc-nature-fx">
+                    <span className="pc-nat-up">{natureEffects[0]}</span>
+                    <span className="pc-nat-dn">{natureEffects[1]}</span>
+                  </span>
+                )}
+              </span>
+            )}
+            {ability && <span className="pc-ability">{splitName(ability)}</span>}
+          </div>
+        )}
         {alive && hasHp && (
           <div className="pc-hp-row">
             <div className="pc-hp-track">
@@ -171,9 +176,6 @@ export default function PartyCard({ mon, routeName, isActiveBattler, inBattle, o
             <img className="pc-item-icon" src={`${SHOWDOWN_ITEMS}/${itemSlug(heldItem)}.png`} alt="" onError={e => { e.currentTarget.style.display = 'none'; }} />
             {splitName(heldItem)}
           </div>
-        )}
-        {ability && (
-          <div className="pc-ability" title={ability}>{splitName(ability)}</div>
         )}
         {friendship !== undefined && friendship !== null && (
           <div className="pc-friend-row">
