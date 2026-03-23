@@ -304,19 +304,19 @@ export default function App() {
                   ))}
                 </div>
               </section>
-              <section className="solo-battle">
-                <h2 className="section-title">Battle</h2>
-                <BattleCard enemyParty={enemyParty} />
-              </section>
-              {timeline && (
-                <aside className="solo-timeline">
+              <aside className="solo-right-col">
+                <div>
+                  <h2 className="section-title">Battle</h2>
+                  <BattleCard enemyParty={enemyParty} />
+                </div>
+                {timeline && (
                   <SoulLinkTimeline
                     timeline={timeline}
                     encounters={filteredSoloRoutes}
                     gameName={gameName}
                   />
-                </aside>
-              )}
+                )}
+              </aside>
             </div>
           );
         })()}
@@ -353,16 +353,16 @@ export default function App() {
                   opponentTypes={isViewingLocal ? leadOpponentTypes : []}
                 />
               </section>
-              <aside className={`multi-battle-col${!isViewingLocal ? ' multi-battle-disabled' : ''}`}>
-                <h3 className="section-title">Battle</h3>
-                {!isViewingLocal
-                  ? <div className="multi-battle-placeholder multi-battle-remote"><span>Battle data not available for remote players</span></div>
-                  : showBattle
-                    ? <BattleCard enemyParty={enemyParty} playerLeadTypes={leadPlayerTypes} />
-                    : <div className="multi-battle-placeholder"><span>No active battle</span></div>
-                }
-              </aside>
-              <aside className="multi-timeline-col">
+              <aside className={`multi-right-col${!isViewingLocal ? ' multi-battle-disabled' : ''}`}>
+                <div>
+                  <h3 className="section-title">Battle</h3>
+                  {!isViewingLocal
+                    ? <div className="multi-battle-placeholder multi-battle-remote"><span>Battle data not available for remote players</span></div>
+                    : showBattle
+                      ? <BattleCard enemyParty={enemyParty} playerLeadTypes={leadPlayerTypes} />
+                      : <div className="multi-battle-placeholder"><span>No active battle</span></div>
+                  }
+                </div>
                 <SoulLinkTimeline
                   timeline={timeline}
                   encounters={isMockMode ? [] : filteredSoloRoutes}
@@ -376,8 +376,13 @@ export default function App() {
         {localOk && isRoom && !isMulti && !isMockMode && (() => {
           const soloLeadOpponentTypes = enemyParty?.[0]?.types || [];
           const soloLeadPlayerTypes = trainerParties[0]?.party?.[0]?.types || [];
+          const timeline = getTimeline(gameName);
           return (
             <div className="layout-solo">
+              <section className="solo-encounters">
+                <h2 className="section-title">Encounters</h2>
+                {roomLinks.length > 0 && <RouteLinkList links={roomLinks} players={roomPlayers} />}
+              </section>
               <section className="solo-party">
                 <h2 className="section-title">Party</h2>
                 <div className="party-grids">
@@ -386,10 +391,19 @@ export default function App() {
                   ))}
                 </div>
               </section>
-              <section className="solo-encounters">
-                {roomLinks.length > 0 && <RouteLinkList links={roomLinks} players={roomPlayers} />}
-              </section>
-              <BattleCard enemyParty={enemyParty} playerLeadTypes={soloLeadPlayerTypes} />
+              <aside className="solo-right-col">
+                <div>
+                  <h2 className="section-title">Battle</h2>
+                  <BattleCard enemyParty={enemyParty} playerLeadTypes={soloLeadPlayerTypes} />
+                </div>
+                {timeline && (
+                  <SoulLinkTimeline
+                    timeline={timeline}
+                    encounters={filteredSoloRoutes}
+                    gameName={gameName}
+                  />
+                )}
+              </aside>
             </div>
           );
         })()}

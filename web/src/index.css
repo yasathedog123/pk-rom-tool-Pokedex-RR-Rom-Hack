@@ -184,7 +184,14 @@ button:active { transform:scale(0.97); }
 .ctrl-sprite-none { font-size:10px; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:.5px; }
 
 /* ---- Main ---- */
-.main-area { flex:1; padding:20px 32px; overflow-y:auto; }
+.main-area {
+  flex:1;
+  padding:20px clamp(16px, 3vw, 32px);
+  overflow-y:auto;
+  max-width:1500px;
+  margin:0 auto;
+  width:100%;
+}
 .section { margin-bottom:20px; }
 .section-title {
   font-size:11px; font-weight:600; text-transform:uppercase;
@@ -196,49 +203,45 @@ button:active { transform:scale(0.97); }
 .empty-state h2 { font-size:20px; font-weight:700; margin-bottom:8px; }
 .empty-state p { color:var(--text-muted); font-size:14px; }
 
-/* ---- Solo Layout ---- */
+/* ---- Solo Layout (3-column grid: encounters | party | battle+timeline) ---- */
 .layout-solo {
-  display: flex;
-  gap: 28px;
-  align-items: flex-start;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 3fr) minmax(0, 1.2fr);
+  gap: 24px;
+  align-items: start;
 }
-.solo-party { flex-shrink:0; }
-.solo-encounters { flex:1; min-width:0; max-width:420px; }
-.solo-battle { flex-shrink:0; }
-.solo-timeline {
-  width:280px; min-width:240px; flex-shrink:0;
+.solo-party { min-width:0; }
+.solo-encounters { min-width:0; }
+.solo-right-col {
+  display:flex; flex-direction:column; gap:16px;
   max-height:calc(100vh - 80px); overflow-y:auto;
-  padding-right:4px;
+  padding-right:4px; min-width:0;
 }
 
-/* ---- Multi Layout (4-column: encounters | party | battle | timeline) ---- */
+/* ---- Multi Layout (3-column grid: encounters | party | battle+timeline) ---- */
 .layout-multi-new {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 3fr) minmax(0, 1.2fr);
   gap: 20px;
-  align-items: flex-start;
-  justify-content: center;
+  align-items: start;
 }
 .multi-encounters {
-  flex: 1;
-  min-width: 300px;
+  min-width:0;
   max-height: calc(100vh - 80px);
   overflow-y: auto;
   padding-right: 4px;
 }
 .multi-party-col {
-  flex-shrink: 0;
+  min-width:0;
 }
-.multi-battle-col {
-  width: 320px;
-  flex-shrink: 0;
-  max-height: calc(100vh - 80px);
-  overflow-y: auto;
-  align-self: flex-start;
+.multi-right-col {
+  display:flex; flex-direction:column; gap:16px;
+  max-height:calc(100vh - 80px); overflow-y:auto;
+  padding-right:4px; min-width:0;
 }
 .multi-battle-placeholder {
   width: 100%;
-  min-height: 500px;
+  min-height: 200px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -252,20 +255,6 @@ button:active { transform:scale(0.97); }
 .multi-battle-disabled {
   opacity: 0.4;
   pointer-events: none;
-}
-.multi-battle-remote {
-  border-color: rgba(255,255,255,0.06);
-  text-align: center;
-  padding: 20px;
-  line-height: 1.6;
-}
-.multi-timeline-col {
-  width: 280px;
-  min-width: 240px;
-  flex-shrink: 0;
-  max-height: calc(100vh - 80px);
-  overflow-y: auto;
-  padding-right: 4px;
 }
 .multi-links-section { }
 .party-grids-center { justify-content:center; }
@@ -374,13 +363,14 @@ button:active { transform:scale(0.97); }
 /* ---- Party Grid ---- */
 .pg-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 10px;
 }
 
 /* ---- PartyCard ---- */
 .pc {
-  width: 220px;
+  width: 100%;
+  min-height: 240px;
   position: relative;
   transition: border-color .2s, box-shadow .2s;
   background: var(--glass-bg);
@@ -464,7 +454,7 @@ button:active { transform:scale(0.97); }
 
 .pc-empty {
   display:flex; align-items:center; justify-content:center;
-  min-height:160px; border-style:dashed; opacity:.25;
+  min-height:240px; border-style:dashed; opacity:.25;
   padding: 10px 12px;
 }
 .pc-empty-inner {
@@ -475,11 +465,11 @@ button:active { transform:scale(0.97); }
 /* ---- Card Header (type gradient) ---- */
 .pc-header {
   position: relative;
-  padding: 8px 10px 10px;
+  padding: 10px 12px 12px;
   border-radius: var(--radius) var(--radius) 0 0;
   display: flex;
   align-items: flex-end;
-  min-height: 48px;
+  min-height: 56px;
 }
 .pc-level-block {
   display:flex; flex-direction:column; gap:0;
@@ -491,7 +481,7 @@ button:active { transform:scale(0.97); }
   line-height:1;
 }
 .pc-level-num {
-  font-size:20px; font-weight:800; line-height:1;
+  font-size:22px; font-weight:800; line-height:1;
   color:#fff; text-shadow:0 1px 4px rgba(0,0,0,0.3);
 }
 .pc-header-meta {
@@ -507,13 +497,13 @@ button:active { transform:scale(0.97); }
   pointer-events:none;
 }
 .pc-sprite {
-  width:90px; height:90px;
+  width:110px; height:110px;
   image-rendering:pixelated; object-fit:contain;
   filter:drop-shadow(0 2px 6px rgba(0,0,0,0.3));
   animation: breathe 3s ease-in-out infinite;
 }
 .pc-sprite-fb {
-  width:90px; height:90px;
+  width:110px; height:110px;
   display:flex; align-items:center; justify-content:center;
   font-weight:700; font-size:20px; color:rgba(255,255,255,0.2);
 }
@@ -534,11 +524,11 @@ button:active { transform:scale(0.97); }
 
 /* ---- Card Details ---- */
 .pc-details {
-  padding: 8px 10px 6px;
+  padding: 10px 12px 8px;
 }
 .pc-name-row { display:flex; align-items:center; gap:4px; }
 .pc-nickname {
-  font-size:13px; font-weight:700; line-height:1.2;
+  font-size:14px; font-weight:700; line-height:1.2;
   overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
 }
 .pc-shiny { color:var(--gold); font-size:14px; line-height:1; }
@@ -682,7 +672,7 @@ button:active { transform:scale(0.97); }
 
 /* ---- Battle Card ---- */
 .bc-wrap {
-  flex-shrink:0; width:320px;
+  width:100%;
   position:relative;
 }
 
@@ -1591,30 +1581,48 @@ button:active { transform:scale(0.97); }
 }
 
 /* ---- Responsive ---- */
-@media (max-width: 1000px) {
-  .layout-solo { flex-direction:column; }
-  .solo-encounters { width:100%; }
-  .solo-timeline { width:100%; min-width:0; max-height:400px; }
-  .layout-multi-new { flex-direction:column; }
+
+/* 2-column: encounters collapses to top, party + right side by side */
+@media (max-width: 1200px) {
+  .layout-multi-new {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  }
   .multi-encounters {
-    width:100%; min-width:0;
-    max-height:none; overflow:visible;
+    grid-column: 1 / -1;
+    max-height: 280px;
   }
-  .multi-battle-col {
-    width:100%; min-width:0;
-    max-height:none;
+  .layout-solo {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
   }
-  .multi-timeline-col {
-    width:100%; min-width:0;
-    max-height:400px;
+  .solo-encounters {
+    grid-column: 1 / -1;
   }
   .pg-trainer-tabs { flex-wrap:wrap; }
 }
+
+/* 1-column: everything stacks */
 @media (max-width: 900px) {
-  .pg-grid { grid-template-columns:1fr 1fr; }
-  .pc { width:100%; }
+  .layout-multi-new,
+  .layout-solo {
+    grid-template-columns: 1fr;
+  }
+  .multi-encounters,
+  .solo-encounters {
+    grid-column: auto;
+    max-height: none;
+  }
+  .multi-right-col,
+  .solo-right-col {
+    max-height: none;
+  }
   .party-grids { flex-direction:column; }
   .et-col-route { width:80px; }
   .cpg-grid { grid-template-columns:1fr 1fr 1fr; }
   .cpc, .cpc-empty { width:100%; height:auto; min-height:100px; }
+}
+
+/* Compact: tighter padding */
+@media (max-width: 600px) {
+  .main-area { padding: 12px 8px; }
+  .pg-grid { grid-template-columns: 1fr; }
 }
