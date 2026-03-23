@@ -107,7 +107,7 @@ export default function PartyGrid({ trainerName, party, routeMap, trainerSprite,
           </div>
         </div>
       )}
-      <div className={`pg-grid ${animDir ? `pg-grid-${animDir}` : ''}`}>
+      <div className={`pg-grid ${inBattle ? 'pg-grid-battle' : ''} ${animDir ? `pg-grid-${animDir}` : ''}`}>
         {slots.map((mon, i) =>
           mon ? (
             <div
