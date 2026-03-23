@@ -205,8 +205,14 @@ button:active { transform:scale(0.97); }
 }
 .solo-party { flex-shrink:0; }
 .solo-encounters { flex:1; min-width:0; max-width:420px; }
+.solo-battle { flex-shrink:0; }
+.solo-timeline {
+  width:280px; min-width:240px; flex-shrink:0;
+  max-height:calc(100vh - 80px); overflow-y:auto;
+  padding-right:4px;
+}
 
-/* ---- Multi Layout (4-column: encounters | battle | party | timeline) ---- */
+/* ---- Multi Layout (4-column: encounters | party | battle | timeline) ---- */
 .layout-multi-new {
   display: flex;
   gap: 20px;
@@ -1588,6 +1594,7 @@ button:active { transform:scale(0.97); }
 @media (max-width: 1000px) {
   .layout-solo { flex-direction:column; }
   .solo-encounters { width:100%; }
+  .solo-timeline { width:100%; min-width:0; max-height:400px; }
   .layout-multi-new { flex-direction:column; }
   .multi-encounters {
     width:100%; min-width:0;
