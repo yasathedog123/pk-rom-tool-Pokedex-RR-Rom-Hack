@@ -10,6 +10,7 @@ MemoryReader.playerReader = nil
 MemoryReader.server = nil
 MemoryReader.serverEnabled = true -- Can be toggled by user
 MemoryReader.soulLink = nil
+MemoryReader.battleReader = nil
 
 -- Load required modules
 local gameDetection = require("core.gamedetection")
@@ -31,6 +32,7 @@ local debugTools = require("debug.debugtools")
 local Server = require("network.server")
 local gamesDB = require("data.gamesdb")
 local SoulLinkState = require("soullink.state")
+local BattleReader = require("readers.battle.battlereader")
 
 
 -- Initialize the Memory Reader
@@ -76,6 +78,7 @@ function MemoryReader.initialize()
         end
 
         MemoryReader.soulLink = SoulLinkState:new()
+        MemoryReader.battleReader = BattleReader:new()
         
         return true
     else
@@ -116,11 +119,32 @@ function MemoryReader.getEnemyPartyData()
     local flagsAddr = MemoryReader.currentGame.addresses.gBattleTypeFlags
     if flagsAddr then
         local flags = gameUtils.read32(gameUtils.hexToNumber(flagsAddr))
-        if flags == 0 then return nil end
+        if flags == 0 then
+            if MemoryReader.battleReader then
+                MemoryReader.battleReader:resetStructSize()
+            end
+            return nil
+        end
     end
 
     local enemyAddr = gameUtils.hexToNumber(MemoryReader.currentGame.addresses.enemyPartyAddr)
     return MemoryReader.partyReader:readEnemyParty({enemyPartyAddr = enemyAddr})
+end
+
+function MemoryReader.getActiveSlots(playerParty, enemyParty)
+    if not MemoryReader.isInitialized then return nil end
+    if not MemoryReader.battleReader then return nil end
+
+    local addr = MemoryReader.currentGame.addresses.gBattleMons
+    if not addr then return nil end
+
+    local flagsAddr = MemoryReader.currentGame.addresses.gBattleTypeFlags
+    if flagsAddr then
+        local flags = gameUtils.read32(gameUtils.hexToNumber(flagsAddr))
+        if flags == 0 then return nil end
+    end
+
+    return MemoryReader.battleReader:getActiveSlots(addr, playerParty, enemyParty)
 end
 
 -- Get party data based on game generation

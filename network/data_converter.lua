@@ -3,6 +3,12 @@
 
 local DataConverter = {}
 
+local function swapToFront(tbl, idx)
+    if idx and idx > 1 and idx <= #tbl then
+        tbl[1], tbl[idx] = tbl[idx], tbl[1]
+    end
+end
+
 function DataConverter.getPartyData(memoryReader)
     -- Read party based on game generation
     local gameCode = memoryReader.currentGame and 
@@ -20,6 +26,11 @@ function DataConverter.getPartyData(memoryReader)
         local gameUtils = require("utils.gameutils")
         local partyAddr = gameUtils.hexToNumber(memoryReader.currentGame.addresses.partyAddr)
         party = memoryReader.partyReader:readParty({partyAddr = partyAddr}, gameCode)
+    end
+
+    local activeSlots = memoryReader.getActiveSlots(party, nil)
+    if activeSlots and activeSlots.playerSlot then
+        swapToFront(party, activeSlots.playerSlot)
     end
     
     -- Convert to API format
@@ -106,6 +117,11 @@ end
 function DataConverter.getEnemyPartyData(memoryReader)
     local party = memoryReader.getEnemyPartyData()
     if not party then return {} end
+
+    local activeSlots = memoryReader.getActiveSlots(nil, party)
+    if activeSlots and activeSlots.enemySlot then
+        swapToFront(party, activeSlots.enemySlot)
+    end
 
     local apiParty = {}
     local pokemonData = require("readers.pokemondata")
