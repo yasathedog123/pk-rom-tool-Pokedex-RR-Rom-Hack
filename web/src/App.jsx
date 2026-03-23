@@ -526,7 +526,7 @@ export default function App() {
           <span className="footer-brand-item"><strong>Link Cable</strong> &mdash; Pokemon ROM Companion</span>
         </div>
         <div className="footer-legal">
-          Pok&eacute;mon images &amp; names &copy; 1995-2024 Nintendo/Creatures Inc./GAME FREAK inc. TM
+          Pok&eacute;mon images &amp; names &copy; 2026 Nintendo/Creatures Inc./GAME FREAK inc. TM
         </div>
       </footer>
 
