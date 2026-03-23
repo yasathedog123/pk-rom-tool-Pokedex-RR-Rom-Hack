@@ -6,15 +6,42 @@ import MoveCard from './MoveCard';
 import { TYPE_COLORS } from '../utils/types';
 import { getEffectiveness, getTypeMatchup } from '../utils/typeEffectiveness';
 
-function splitMoveName(name) {
+const SHOWDOWN_ITEMS = 'https://play.pokemonshowdown.com/sprites/itemicons';
+const SHOWDOWN_CATEGORIES = 'https://play.pokemonshowdown.com/sprites/categories';
+
+function splitName(name) {
   if (!name) return '';
   return name.replace(/([a-z])([A-Z])/g, '$1 $2')
              .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2');
 }
 
+function itemSlug(name) {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+}
+
 function capitalize(s) {
   return s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
 }
+
+function CategoryIcon({ damageClass }) {
+  if (!damageClass) return null;
+  const file = damageClass.charAt(0).toUpperCase() + damageClass.slice(1);
+  return (
+    <img className="pc-cls-icon" src={`${SHOWDOWN_CATEGORIES}/${file}.png`} alt={damageClass} title={capitalize(damageClass)} />
+  );
+}
+
+const NATURE_EFFECTS = {
+  Adamant: ['+Atk', '-SpA'], Bashful: null, Bold: ['+Def', '-Atk'],
+  Brave: ['+Atk', '-Spe'], Calm: ['+SpD', '-Atk'], Careful: ['+SpD', '-SpA'],
+  Docile: null, Gentle: ['+SpD', '-Def'], Hardy: null,
+  Hasty: ['+Spe', '-Def'], Impish: ['+Def', '-SpA'], Jolly: ['+Spe', '-SpA'],
+  Lax: ['+Def', '-SpD'], Lonely: ['+Atk', '-Def'], Mild: ['+SpA', '-Def'],
+  Modest: ['+SpA', '-Atk'], Naive: ['+Spe', '-SpD'], Naughty: ['+Atk', '-SpD'],
+  Quiet: ['+SpA', '-Spe'], Quirky: null, Rash: ['+SpA', '-SpD'],
+  Relaxed: ['+Def', '-Spe'], Sassy: ['+SpD', '-Spe'], Serious: null,
+  Timid: ['+Spe', '-Atk'],
+};
 
 function hpColor(ratio) {
   if (ratio > 0.5) return '#34d399';
@@ -59,7 +86,9 @@ export default function PartyCard({ mon, routeName, isActiveBattler, inBattle, o
   const alive      = mon.alive !== undefined ? mon.alive : hp > 0;
   const hasHp      = maxHp > 0;
   const nature     = mon.nature;
+  const natureEffects = nature ? NATURE_EFFECTS[nature] || null : null;
   const heldItem   = mon.held_item || mon.heldItem;
+  const ability    = mon.abilityName || mon.ability_name || mon.ability || '';
   const friendship = mon.friendship;
   const hpRatio    = maxHp > 0 ? hp / maxHp : 0;
   const route      = routeName || mon.met_location_name || mon.metLocationName || mon.route_name || mon.routeName || '';
@@ -115,7 +144,17 @@ export default function PartyCard({ mon, routeName, isActiveBattler, inBattle, o
         <div className="pc-species">{species !== nickname ? species : '\u00A0'}</div>
         <div className="pc-chips">
           {types.map(t => <TypeBadge key={t} type={t} />)}
-          {nature && <span className="pc-nature">{nature}</span>}
+          {nature && (
+            <span className={`pc-nature ${natureEffects ? 'pc-nature-stat' : 'pc-nature-neutral'}`}>
+              {nature}
+              {natureEffects && (
+                <span className="pc-nature-fx">
+                  <span className="pc-nat-up">{natureEffects[0]}</span>
+                  <span className="pc-nat-dn">{natureEffects[1]}</span>
+                </span>
+              )}
+            </span>
+          )}
           {statusInfo && <span className={`pc-status ${statusInfo.cls}`}>{statusInfo.label}</span>}
         </div>
         {alive && hasHp && (
@@ -128,7 +167,13 @@ export default function PartyCard({ mon, routeName, isActiveBattler, inBattle, o
         )}
         {!alive && <div className="pc-fallen">FALLEN</div>}
         {heldItem && heldItem !== 'None' && (
-          <div className="pc-held-item" title={heldItem}>{heldItem}</div>
+          <div className="pc-held-item" title={heldItem}>
+            <img className="pc-item-icon" src={`${SHOWDOWN_ITEMS}/${itemSlug(heldItem)}.png`} alt="" onError={e => { e.currentTarget.style.display = 'none'; }} />
+            {splitName(heldItem)}
+          </div>
+        )}
+        {ability && (
+          <div className="pc-ability" title={ability}>{splitName(ability)}</div>
         )}
         {friendship !== undefined && friendship !== null && (
           <div className="pc-friend-row">
@@ -162,7 +207,18 @@ export default function PartyCard({ mon, routeName, isActiveBattler, inBattle, o
                 const typeColor = typeName ? TYPE_COLORS[typeName] : null;
                 return (
                   <div key={i} className="pc-cmove" style={typeColor ? { borderLeftColor: typeColor, background: `linear-gradient(90deg, ${typeColor}15, transparent 60%)` } : {}}>
-                    {name ? splitMoveName(name) : <span className="pc-cmove-empty">&mdash;</span>}
+                    {name ? (
+                      <>
+                        <span className="pc-cmove-name">{splitName(name)}</span>
+                        {md && (
+                          <span className="pc-cmove-stats">
+                            <CategoryIcon damageClass={md.damageClass || md.damage_class} />
+                            <span className="pc-cmove-pow">{md.power || '—'}</span>
+                            <span className="pc-cmove-acc">{md.accuracy || '—'}</span>
+                          </span>
+                        )}
+                      </>
+                    ) : <span className="pc-cmove-empty">&mdash;</span>}
                   </div>
                 );
               })}
