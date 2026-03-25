@@ -33,6 +33,10 @@ function mapSyncMon(mon) {
     types: mon.types || [],
     alive: (mon.currentHP ?? 0) > 0,
     in_party: true,
+    move_names: mon.moveNames || mon.move_names || [],
+    ability: mon.ability || mon.abilityName || '',
+    status: mon.status || 'Healthy',
+    is_shiny: mon.isShiny || mon.is_shiny || false,
   };
 }
 

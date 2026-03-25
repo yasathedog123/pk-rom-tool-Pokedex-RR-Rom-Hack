@@ -88,6 +88,10 @@ class SyncPokemon(BaseModel):
     held_item_id: int = 0
     hidden_power: str = ""
     friendship: int = 0
+    move_names: list[str] = []
+    ability: str = ""
+    status: str = "Healthy"
+    is_shiny: bool = False
 
 
 class LocalEvent(BaseModel):

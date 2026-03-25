@@ -193,8 +193,10 @@ export default function App() {
 
   const trainerParties = isRoom
     ? roomPlayers.map(p => {
+        const isLocal = p.player_id === localPlayerId;
         const snap = room.roomState?.player_snapshots?.[p.player_id];
-        const party = (snap?.current_party || []).map(mon => {
+        const baseParty = isLocal ? enrichedLocalParty : (snap?.current_party || []);
+        const party = baseParty.map(mon => {
           const pairMon = enrichedRoomPairs.flatMap(pair =>
             Object.entries(pair.pokemon || {})
               .filter(([pid]) => pid === p.player_id)
@@ -204,7 +206,7 @@ export default function App() {
         });
         const playerSprite = snap?.trainer_sprite_id
           ? getTrainerSpriteUrl(snap.trainer_sprite_id)
-          : (p.player_id === localPlayerId ? trainerSpriteUrl : null);
+          : (isLocal ? trainerSpriteUrl : null);
         return {
           name: p.player_name,
           playerId: p.player_id,
