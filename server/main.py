@@ -57,20 +57,15 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Link Cable Sync Server", version="0.2.0", lifespan=lifespan)
 
-_cors_origins = os.environ.get("CORS_ORIGINS", "*").split(",")
+_cors_origins = os.environ.get("CORS_ORIGINS", "http://localhost:3000,http://localhost:5173").split(",")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=_cors_origins,
-    allow_credentials=True,
+    allow_origins=[o.strip() for o in _cors_origins],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-@app.get("/health")
-async def health():
-    return {"status": "ok"}
 
 
 def get_room(code: str) -> Room:
@@ -168,7 +163,10 @@ def auto_pair_catches(room: Room):
                         route_name = catch.route_name
             if player_catches:
                 room.pairs.append(PairGroup(route=route, route_name=route_name, pokemon=player_catches, team=team_label))
-    room.pairs.sort(key=lambda pair: pair.route)
+    room.pairs.sort(key=lambda pair: min(
+        (c.timestamp for c in pair.pokemon.values() if hasattr(c, 'timestamp') and c.timestamp),
+        default=datetime(2000, 1, 1)
+    ))
 
 
 def propagate_death(room: Room, dead_personality: int, dead_player_id: str):
@@ -543,22 +541,6 @@ async def get_room_state(code: str):
     )
 
 
-@app.get("/rooms")
-async def list_rooms():
-    return {
-        "rooms": [
-            {
-                "code": room.code,
-                "required_profile": room.required_profile.model_dump() if room.required_profile else None,
-                "players": [player.model_dump(mode="json") for player in room.players.values()],
-                "created_at": room.created_at.isoformat(),
-                "catches_count": len(room.catches),
-            }
-            for room in rooms.values()
-        ]
-    }
-
-
 @app.websocket("/rooms/{code}/ws")
 async def websocket_endpoint(websocket: WebSocket, code: str):
     await websocket.accept()
@@ -614,7 +596,9 @@ async def serve_web_index():
 
 @app.get("/app/{path:path}")
 async def serve_web_assets(path: str):
-    file_path = _web_dir / path
+    file_path = (_web_dir / path).resolve()
+    if not file_path.is_relative_to(_web_dir.resolve()):
+        raise HTTPException(status_code=403)
     if file_path.is_file():
         return FileResponse(str(file_path))
     raise HTTPException(status_code=404)
@@ -622,7 +606,10 @@ async def serve_web_assets(path: str):
 
 @app.get("/assets/{path:path}")
 async def serve_built_assets(path: str):
-    file_path = _web_dir / "assets" / path
+    assets_dir = (_web_dir / "assets").resolve()
+    file_path = (assets_dir / path).resolve()
+    if not file_path.is_relative_to(assets_dir):
+        raise HTTPException(status_code=403)
     if file_path.is_file():
         return FileResponse(str(file_path))
     raise HTTPException(status_code=404)

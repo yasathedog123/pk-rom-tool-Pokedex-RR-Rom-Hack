@@ -462,7 +462,10 @@ export default function App() {
               <aside className="col-timeline">
                 <SoulLinkTimeline
                   timeline={timeline}
-                  encounters={isMockMode ? [] : filteredSoloRoutes}
+                  encounters={finalRoomLinks.map(l => ({
+                    locationName: l.routeName,
+                    pokemon: l.pokemon[localPlayerId] ? [l.pokemon[localPlayerId]] : [],
+                  }))}
                   gameName={gameName}
                   teams={isRaceMode ? { links: finalRoomLinks, players: finalRoomPlayers, teamNames } : null}
                   myTeam={myTeam}

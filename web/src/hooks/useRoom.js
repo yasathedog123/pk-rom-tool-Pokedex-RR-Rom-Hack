@@ -134,7 +134,10 @@ export default function useRoom(syncUrl, playerName, localStatus, localSoul, loc
     if (!localStatus?.game?.initialized) { setError('Local game not detected.'); return; }
     if (!playerName) { setError('Enter a display name.'); return; }
     setError('');
+    setRoomState(null);
     sentIds.current.clear();
+    if (wsRef.current) wsRef.current.close();
+    if (syncTimer.current) clearInterval(syncTimer.current);
     try {
       const { code } = await apiCreateRoom(syncUrl, roomMode, maxPlayers, teamNames);
       setRoomCode(code);
@@ -154,7 +157,10 @@ export default function useRoom(syncUrl, playerName, localStatus, localSoul, loc
     if (!localStatus?.game?.initialized) { setError('Local game not detected.'); return; }
     if (!playerName) { setError('Enter a display name.'); return; }
     setError('');
+    setRoomState(null);
     sentIds.current.clear();
+    if (wsRef.current) wsRef.current.close();
+    if (syncTimer.current) clearInterval(syncTimer.current);
     const upper = code.toUpperCase();
     setRoomCode(upper);
     try {
