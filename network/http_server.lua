@@ -10,7 +10,7 @@ HttpServer.__index = HttpServer
 
 -- Server configuration
 local DEFAULT_PORT = 8080
-local DEFAULT_HOST = "localhost"
+local DEFAULT_HOST = "0.0.0.0"
 
 function HttpServer:new(memoryReader, port, host)
     local obj = setmetatable({}, HttpServer)
@@ -67,6 +67,8 @@ function HttpServer:start()
     console.log("  GET /enemy - Get opponent party (during battles)")
     console.log("  GET /player - Get current player information")
     console.log("  GET /bag - Get current bag information")
+    console.log("  GET /pokedex - Graphical Pokedex viewer (browser)")
+    console.log("  GET /api/pokedex - Pokedex data (JSON)")
     console.log("  GET /soullink/state - Get local Soul Link state")
     console.log("  GET /soullink/events - Get recent Soul Link events")
     console.log("  GET /status - Get server status")
@@ -152,7 +154,11 @@ function HttpServer:handleRequest(client, requestLine)
     
     -- Route requests
     if method == "GET" then
-        if path == "/party" then
+        if path == "/pokedex" then
+            apiHandlers.handlePokedexPageRequest(client, self.port, self.host)
+        elseif path == "/api/pokedex" then
+            apiHandlers.handlePokedexApiRequest(client, self.memoryReader)
+        elseif path == "/party" then
             apiHandlers.handlePartyRequest(client, self.memoryReader)
         elseif path == "/enemy" then
             apiHandlers.handleEnemyPartyRequest(client, self.memoryReader)
@@ -185,7 +191,29 @@ function HttpServer:handleRequest(client, requestLine)
             httpUtils.sendResponse(client, 404, "Not Found", "text/plain", "Endpoint not found")
         end
     else
-        httpUtils.sendResponse(client, 405, "Method Not Allowed", "text/plain", "Method not supported")
+        if path == "/pokedex" then
+            apiHandlers.handlePokedexPageRequest(client, self.port, self.host)
+        elseif path == "/api/pokedex" then
+            apiHandlers.handlePokedexApiRequest(client, self.memoryReader)
+        elseif path == "/party" then
+            apiHandlers.handlePartyRequest(client, self.memoryReader)
+        elseif path == "/enemy" then
+            apiHandlers.handleEnemyPartyRequest(client, self.memoryReader)
+        elseif path == "/player" or path == "/trainer" then
+            apiHandlers.handlePlayerRequest(client, self.memoryReader)
+        elseif path == "/bag" then
+            apiHandlers.handleBagRequest(client, self.memoryReader)
+        elseif path == "/soullink/state" then
+            apiHandlers.handleSoulLinkStateRequest(client, self.memoryReader)
+        elseif path == "/soullink/events" then
+            apiHandlers.handleSoulLinkEventsRequest(client, self.memoryReader)
+        elseif path == "/status" then
+            apiHandlers.handleStatusRequest(client, self.memoryReader, self.port, self.host, self.isRunning)
+        elseif path == "/" then
+            apiHandlers.handleRootRequest(client, self.port, self.host)
+        else
+            httpUtils.sendResponse(client, 404, "Not Found", "text/plain", "Endpoint not found")
+        end
     end
 end
 

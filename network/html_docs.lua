@@ -24,6 +24,16 @@ function HtmlDocs.getDocumentationHtml(port, host)
     <h2>Available Endpoints:</h2>
     
     <div class="endpoint">
+        <span class="method">GET</span> <code>/pokedex</code><br>
+        <strong>Graphical Pok&eacute;dex viewer.</strong> Open in a browser to see caught/seen/uncaught status for all Pok&eacute;mon.
+    </div>
+
+    <div class="endpoint">
+        <span class="method">GET</span> <code>/api/pokedex</code><br>
+        Returns Pok&eacute;dex data (caught/seen status for all species) in JSON format.
+    </div>
+
+    <div class="endpoint">
         <span class="method">GET</span> <code>/status</code><br>
         Returns server and game status information.
     </div>

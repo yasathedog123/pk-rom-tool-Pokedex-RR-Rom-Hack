@@ -495,6 +495,14 @@ GamesDB.games = {
             -- Badge Offset
             -- Offset from flags address
             badgeFlags = 0x104
+        },
+        -- Pokedex bit arrays in SaveBlock2
+        -- Vanilla FireRed: 412 species, 52 bytes per flag array
+        pokedexOffsets = {
+            ownedOffset = 0x24,  -- SaveBlock2 + 0x18 (Pokedex struct) + 0x0C (owned array)
+            seenOffset = 0x58,   -- SaveBlock2 + 0x18 (Pokedex struct) + 0x40 (seen array)
+            flagBytes = 52,      -- 13 u32s = 52 bytes = 416 bits
+            totalSpecies = 386,  -- National Dex Gen 1-3
         }
     },
 
@@ -575,7 +583,7 @@ GamesDB.games = {
             -- First 2 numbers determine domain
             -- 02 = EWRAM, 08 = ROM
             partyAddr = "02024284",
-            enemyPartyAddr = "0202402C", 
+            enemyPartyAddr = "0202402C",
             gBattleMons = "02023BE4",
             gBattleTypeFlags = "02022B4C",
             speciesDataTable = "0817B9908",
@@ -616,6 +624,17 @@ GamesDB.games = {
             coins = 0x294,
             -- Bags
             pcItems = 0x298,
+        },
+        -- CFRU Pokedex bit arrays in SaveBlock1 (NOT SaveBlock2!)
+        -- Indexed by (NationalDexNo - 1). Supports up to 999 species.
+        -- From CFRU source: dexSeenFlags at SB1+0x0310, dexCaughtFlags at SB1+0x038D
+        pokedexOffsets = {
+            -- These are SaveBlock1-relative offsets
+            seenOffsetSB1 = 0x0310,    -- dexSeenFlags
+            caughtOffsetSB1 = 0x03B4,  -- dexCaughtFlags (Radical Red specific, standard CFRU is 0x038D)
+            flagBytes = 125,           -- (999/8)+1 = 125 bytes
+            totalSpecies = 898,        -- National Dex Gen 1-8
+            indexedByNatDex = true,     -- bit index = NatDex - 1
         }
     },
 }

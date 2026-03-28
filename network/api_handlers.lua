@@ -5,8 +5,12 @@ local json = require("modules.dkjson")
 local httpUtils = require("network.http_utils")
 local dataConverter = require("network.data_converter")
 local htmlDocs = require("network.html_docs")
+local pokedexHtml = require("network.pokedex_html")
 
 local ApiHandlers = {}
+
+-- Lazy-initialized Pokedex reader (created on first request)
+local pokedexReader = nil
 
 function ApiHandlers.handlePartyRequest(client, memoryReader)
     if not memoryReader.isInitialized then
@@ -221,6 +225,49 @@ function ApiHandlers.handleSetMoneyRequest(client, memoryReader, body)
     -- Return success response
     httpUtils.sendResponse(client, 200, "OK", "application/json",
         json.encode({success = true, message = "Money set to " .. amount}))
+end
+
+function ApiHandlers.handlePokedexApiRequest(client, memoryReader)
+    if not memoryReader.isInitialized then
+        httpUtils.sendResponse(client, 503, "Service Unavailable", "application/json",
+            json.encode({error = "Memory reader not initialized", message = "No Pokemon game detected"}))
+        return
+    end
+
+    local gameData = memoryReader.currentGame
+    if not gameData or not gameData.pokedexOffsets then
+        httpUtils.sendResponse(client, 503, "Service Unavailable", "application/json",
+            json.encode({error = "Pokedex not supported", message = "This game does not have Pokedex offset data configured"}))
+        return
+    end
+
+    -- Create or reuse the Pokedex reader based on game generation
+    if not pokedexReader then
+        local generation = gameData.gameInfo.generation
+        if generation == "CFRU" or generation == 3 then
+            local CFRUPokedexReader = require("readers.pokedex.cfrupokedexreader")
+            pokedexReader = CFRUPokedexReader:new()
+        else
+            httpUtils.sendResponse(client, 503, "Service Unavailable", "application/json",
+                json.encode({error = "Pokedex not supported", message = "Pokedex reading is only supported for Gen 3 and CFRU games"}))
+            return
+        end
+    end
+
+    local data = pokedexReader:readPokedex()
+    if not data then
+        httpUtils.sendResponse(client, 500, "Internal Server Error", "application/json",
+            json.encode({error = "Failed to read Pokedex data"}))
+        return
+    end
+
+    local jsonData = json.encode(data, {indent = true})
+    httpUtils.sendResponse(client, 200, "OK", "application/json", jsonData)
+end
+
+function ApiHandlers.handlePokedexPageRequest(client, port, host)
+    local html = pokedexHtml.getPokedexPage(port, host)
+    httpUtils.sendResponse(client, 200, "OK", "text/html", html)
 end
 
 return ApiHandlers
